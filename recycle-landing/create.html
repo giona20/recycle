@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Create token · RECYCLE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* RECYCLE app pages: same tokens and type as the landing. */
+:root{
+  --bg:#eef2ef; --surface:#f8faf8; --ink:#141a17; --muted:#56615b; --rule:#cfd8d2;
+  --accent:#16834a; --accent-ink:#ffffff; --loss:#c8372d; --paper:#e7ebe6; --warn:#a86a00;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1311; --surface:#151c19; --ink:#e9efeb; --muted:#9aa8a0; --rule:#2a3530;
+  --accent:#3ecf7f; --accent-ink:#06210f; --loss:#ff6b5e; --paper:#1b2420; --warn:#e7a73a;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1311; --surface:#151c19; --ink:#e9efeb; --muted:#9aa8a0; --rule:#2a3530;
+  --accent:#3ecf7f; --accent-ink:#06210f; --loss:#ff6b5e; --paper:#1b2420; --warn:#e7a73a;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--body);margin:0;padding-inline:20px;padding-block:0 56px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3{font-family:var(--display);font-weight:800;line-height:.95;margin:0;text-wrap:balance;letter-spacing:.005em;text-transform:uppercase}
+h1{font-size:clamp(44px,7vw,80px);font-weight:900}
+h2{font-size:clamp(28px,4vw,40px)}
+h3{font-size:22px}
+p{margin:0;max-width:64ch}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+[hidden]{display:none!important}
+
+/* nav */
+nav.top{display:flex;align-items:center;gap:20px;padding-block:18px;max-width:1120px;margin:0 auto;flex-wrap:wrap}
+.logo{font:900 26px/1 var(--display);letter-spacing:.04em;display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none}
+.logo svg{width:28px;height:28px}
+.links{display:flex;gap:4px;flex-wrap:wrap}
+.links a{font:600 14px/1 var(--body);color:var(--muted);text-decoration:none;padding:9px 12px;border-radius:4px}
+.links a:hover{color:var(--ink);background:var(--paper)}
+.links a[aria-current="page"]{color:var(--ink);background:var(--paper)}
+.spacer{flex:1}
+.pill{font:600 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);padding:9px 12px;border-radius:999px;color:var(--muted);background:transparent;cursor:pointer}
+.pill b{color:var(--accent)}
+.pill.on{border-color:var(--accent);color:var(--ink)}
+.demo-bar{max-width:1120px;margin:0 auto 8px;font:500 12.5px/1.4 var(--mono);color:var(--muted);border-top:1px solid var(--rule);padding-top:10px}
+
+/* buttons, tags */
+.btn{font:600 15px/1 var(--body);padding:13px 20px;border-radius:4px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{padding:9px 12px;font-size:13.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:not(:disabled):hover{transform:translateY(-1px)}
+.tag{font:600 11px/1.3 var(--mono);letter-spacing:.07em;text-transform:uppercase;background:var(--paper);color:var(--ink);padding:5px 8px;border-radius:2px;white-space:nowrap}
+.tag.lm{color:var(--loss)} .tag.bc{color:var(--s1)} .tag.vl{color:var(--accent)} .tag.rf{color:var(--muted)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px}
+
+/* surfaces */
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:20px;min-width:0}
+.rule{border:0;border-top:1px solid var(--rule);margin:0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.stat{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat .v{font:800 28px/1 var(--display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.bar{height:8px;background:var(--paper);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.avatar{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font:900 18px/1 var(--display);color:#fff;flex:none;letter-spacing:.02em;background-size:cover;background-position:center}
+
+/* forms */
+label.f{display:flex;flex-direction:column;gap:6px;font-size:13.5px;font-weight:600;min-width:0}
+label.f small{font-weight:400;color:var(--muted)}
+input,select,textarea{font:15px var(--body);padding:11px 12px;border:1.5px solid var(--rule);background:var(--bg);color:var(--ink);border-radius:4px;width:100%}
+input.num,input[type=number]{font-family:var(--mono)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none}
+.err{color:var(--loss);font-size:13px}
+.ok{color:var(--accent)}
+.warn{color:var(--warn)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:600 13px/1 var(--mono);padding:10px 12px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:3px;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+
+/* charts */
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.chart .grid{stroke:var(--rule);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font:12px/1.4 var(--mono);padding:7px 9px;border-radius:3px;white-space:nowrap;z-index:2}
+
+footer{max-width:1120px;margin:40px auto 0;border-top:1px solid var(--rule);padding-top:16px;font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+@media (max-width:820px){.stats{grid-template-columns:1fr 1fr}}
+
+/* Layout: a launch ticket being filled in. Numbered sections on the left (the real order a creator
+   decides things in), a sticky preview of the launch card and its economics on the right. */
+.cgrid{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start}
+.steps{display:flex;flex-direction:column;gap:20px;min-width:0}
+.step{display:grid;grid-template-columns:44px 1fr;gap:4px 14px;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:20px}
+.step .n{font:900 40px/1 var(--display);color:var(--accent);grid-row:span 2}
+.step h2{font-size:26px;align-self:center}
+.step .body{grid-column:2;display:flex;flex-direction:column;gap:14px;margin-top:8px;min-width:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.opt{position:relative;display:flex;flex-direction:column;gap:6px;border:1.5px solid var(--rule);border-radius:6px;padding:14px;cursor:pointer;background:var(--bg);min-width:0}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt b{font:800 18px/1 var(--display);text-transform:uppercase;letter-spacing:.01em}
+.opt span{font-size:12.5px;color:var(--muted)}
+.opt em{font:600 10.5px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.06em;font-style:normal}
+.opt:has(input:checked){border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.drop{display:flex;gap:14px;align-items:center}
+.drop input[type=file]{padding:8px;font-size:13px}
+input[type=range]{padding:0;accent-color:var(--accent)}
+.side{position:sticky;top:12px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.pv{display:flex;flex-direction:column;gap:12px}
+.pv .top{display:flex;gap:12px;align-items:center}
+.pv .nm{font:800 24px/1 var(--display);text-transform:uppercase}
+.pv .sym{font:600 12.5px/1 var(--mono);color:var(--muted);margin-top:4px}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:13.5px}
+.checks li{display:grid;grid-template-columns:18px 1fr;gap:8px}
+.checks .i{font:700 13px/1.5 var(--mono)}
+pre{font:12px/1.5 var(--mono);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:12px;overflow:auto;max-height:280px;margin:0}
+details summary{cursor:pointer;font-weight:600;font-size:14px}
+.done{border-color:var(--accent)}
+@media (max-width:900px){.cgrid{grid-template-columns:1fr}.side{position:static}.opts{grid-template-columns:1fr}.row3{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.row2,.row3{grid-template-columns:1fr}}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+</style>
+</head><body>
+
+<nav class="top" aria-label="Main">
+  <a class="logo" data-route="home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3a13 13 0 1 1-11.3 6.6" fill="none" stroke="var(--accent)" stroke-width="4"/><path d="M2 4l3 6 6-3" fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-linejoin="round"/></svg>RECYCLE</a>
+  <div class="links"><a data-route="home">Overview</a><a data-route="launchpad">Launchpad</a><a data-route="create">Create token</a></div>
+  <span class="spacer"></span>
+  <button class="pill" id="wallet-btn" type="button">Connect demo wallet</button>
+</nav>
+<p class="demo-bar">Demo mode · nothing here is on-chain. The demo wallet starts with 120 tickets, as if it had lost on Papertrade during Loss Mining.</p>
+
+<main class="wrap">
+  <div style="padding-top:12px">
+    <p class="eyebrow">Create · demo</p>
+    <h1 style="margin-top:12px">Launch a token</h1>
+    <p class="muted" style="font-size:17px;margin-top:14px">Pick the token, how losers qualify, how the curve is paid and what the vault does with the money. Everything here is locked once the launch is created.</p>
+  </div>
+
+  <form id="f" class="cgrid" novalidate>
+    <div class="steps">
+      <section class="step" aria-labelledby="h1s">
+        <span class="n">1</span><h2 id="h1s">Token</h2>
+        <div class="body">
+          <div class="row2">
+            <label class="f" for="name">Name<input id="name" maxlength="32" placeholder="Margin Call" autocomplete="off"></label>
+            <label class="f" for="symbol">Ticker<input id="symbol" maxlength="8" placeholder="MCALL" autocomplete="off" style="text-transform:uppercase" class="num"></label>
+          </div>
+          <label class="f" for="blurb">One-line pitch <small>Shown on the launch card, up to 160 characters.</small>
+            <textarea id="blurb" rows="2" maxlength="160" placeholder="For everyone who got the email at 3am."></textarea></label>
+          <div class="drop">
+            <span id="av"></span>
+            <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:0">
+              <label class="f" for="img">Image <small>PNG or JPG, up to 300 KB. Without one the card uses a coloured monogram.</small><input id="img" type="file" accept="image/png,image/jpeg,image/webp"></label>
+              <label class="f" for="hue">Monogram colour<input id="hue" type="range" min="0" max="359" value="150"></label>
+            </div>
+          </div>
+          <p class="err" id="e1" hidden></p>
+        </div>
+      </section>
+
+      <section class="step" aria-labelledby="h2s">
+        <span class="n">2</span><h2 id="h2s">Loss Mining</h2>
+        <div class="body">
+          <p class="note muted" style="font-size:13.5px">Before the curve opens, wallets earn tickets from the PAPER they mint on Papertrade, which only happens when they lose.</p>
+          <div class="row3">
+            <label class="f" for="lmh">Window<select id="lmh"><option value="24">24 hours</option><option value="48" selected>48 hours</option><option value="72">72 hours</option><option value="168">7 days</option></select></label>
+            <label class="f" for="ppt">PAPER per ticket<input id="ppt" type="number" min="1000" step="1000" value="10000"></label>
+            <label class="f" for="cap">Tickets cap / wallet<input id="cap" type="number" min="1" step="10" value="500"></label>
+          </div>
+          <label class="f" for="liq">Liquidation bonus <small id="liq-v">up to +50% tickets for 10+ liquidations</small><input id="liq" type="range" min="0" max="100" step="10" value="50"></label>
+        </div>
+      </section>
+
+      <section class="step" aria-labelledby="h3s">
+        <span class="n">3</span><h2 id="h3s">Bonding curve</h2>
+        <div class="body">
+          <div class="opts" role="radiogroup" aria-label="Payment">
+            <label class="opt"><input type="radio" name="pay" value="PROOF_OF_LOSS" checked><b>Proof of loss</b><span>Pay in USDC. Tickets decide who can buy and how much.</span><em class="ok">Works today</em></label>
+            <label class="opt"><input type="radio" name="pay" value="HYBRID"><b>Hybrid burn</b><span>USDC on the curve, plus PAPER burned with every buy.</span><em class="warn">Needs transferable PAPER</em></label>
+            <label class="opt"><input type="radio" name="pay" value="PAPER"><b>PAPER only</b><span>Priced in PAPER: half burned, half staked by the vault. No USDC raised.</span><em class="warn">Needs transferable PAPER</em></label>
+          </div>
+          <div class="row2">
+            <label class="f" for="p0">Start price <small id="mc0"></small><input id="p0" type="number" min="0" step="0.000001" value="0.00001"></label>
+            <label class="f" for="p1">Graduation price <small id="mc1"></small><input id="p1" type="number" min="0" step="0.000001" value="0.00024"></label>
+          </div>
+          <div class="row3">
+            <label class="f" for="quote">USDC per ticket<input id="quote" type="number" min="1" step="5" value="25"></label>
+            <label class="f" for="days">Curve open for<select id="days"><option value="3">3 days</option><option value="5">5 days</option><option value="7" selected>7 days</option></select></label>
+            <label class="f" for="burn">PAPER burned / USDC<input id="burn" type="number" min="0" step="10" value="50"></label>
+          </div>
+          <label class="f" for="share">Raise split <small id="share-v"></small><input id="share" type="range" min="20" max="80" step="5" value="50"></label>
+          <p class="err" id="e3" hidden></p>
+        </div>
+      </section>
+
+      <section class="step" aria-labelledby="h4s">
+        <span class="n">4</span><h2 id="h4s">Vault</h2>
+        <div class="body">
+          <div class="opts" role="radiogroup" aria-label="Vault mode">
+            <label class="opt"><input type="radio" name="mode" value="KAMIKAZE" checked><b>Kamikaze</b><span>Fixed leverage. Wins buy &amp; burn the meme, liquidations send PAPER to holders.</span></label>
+            <label class="opt"><input type="radio" name="mode" value="DELTA_NEUTRAL"><b>Delta neutral</b><span>Long and short together. The losing leg mints PAPER, staked to rebuild the capital.</span></label>
+            <label class="opt"><input type="radio" name="mode" value="CUSTOM"><b>Custom</b><span>Your leverage, stop, take profit, direction and profit split.</span></label>
+          </div>
+          <div class="row3">
+            <label class="f" for="asset">Market<select id="asset"><option>BTC</option><option>ETH</option></select></label>
+            <label class="f" for="lev" data-m="KAMIKAZE CUSTOM">Leverage<select id="lev"><option>10</option><option>25</option><option>50</option><option selected>100</option><option>250</option><option>500</option><option>1000</option></select></label>
+            <label class="f" for="alloc" data-m="KAMIKAZE CUSTOM">Margin per trade<select id="alloc"><option value="0.02">2% of vault</option><option value="0.05">5%</option><option value="0.1" selected>10%</option><option value="0.25">25%</option></select></label>
+            <label class="f" for="lmin" data-m="DELTA_NEUTRAL">Min leverage<input id="lmin" type="number" min="1" max="1000" value="20"></label>
+            <label class="f" for="lmax" data-m="DELTA_NEUTRAL">Max leverage<input id="lmax" type="number" min="1" max="1000" value="500"></label>
+          </div>
+          <div class="row3" data-m="CUSTOM">
+            <label class="f" for="tp">Take profit <small>× liq. distance</small><input id="tp" type="number" min="0.2" max="5" step="0.1" value="1.5"></label>
+            <label class="f" for="sl">Stop <small>× liq. distance (1 = let it liquidate)</small><input id="sl" type="number" min="0.1" max="1" step="0.05" value="0.6"></label>
+            <label class="f" for="dir">Direction<select id="dir"><option>random</option><option>long</option><option>short</option><option selected>momentum</option><option>contrarian</option></select></label>
+          </div>
+          <div class="row2" data-m="CUSTOM">
+            <label class="f" for="pbb">Profit to buyback &amp; burn <small id="pbb-v"></small><input id="pbb" type="range" min="0" max="100" step="5" value="50"></label>
+            <label class="f" for="pth">PAPER to holders <small id="pth-v"></small><input id="pth" type="range" min="0" max="100" step="5" value="100"></label>
+          </div>
+          <div class="row2" data-m="DELTA_NEUTRAL">
+            <label class="f" for="cf">Close the pair at <small id="cf-v"></small><input id="cf" type="range" min="10" max="90" step="5" value="50"></label>
+            <label class="f" for="ytb">Staking yield to buyback <small id="ytb-v"></small><input id="ytb" type="range" min="0" max="100" step="5" value="20"></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="step" aria-labelledby="h5s" id="review">
+        <span class="n">5</span><h2 id="h5s">Review &amp; create</h2>
+        <div class="body">
+          <ul class="checks" id="checks"></ul>
+          <details><summary>Contract call: RecycleLaunchpad.createLaunch</summary><pre id="call" style="margin-top:10px"></pre></details>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <button class="btn primary" type="submit" id="go">Create launch (demo)</button>
+            <span class="note muted" style="font-size:13px">Demo: saved in this browser and listed on the Launchpad.</span>
+          </div>
+          <p id="status" role="status"></p>
+        </div>
+      </section>
+    </div>
+
+    <aside class="side" aria-label="Preview">
+      <div class="card pv" id="preview"></div>
+      <div class="card">
+        <h3>Where the money goes</h3>
+        <svg class="chart" id="mini" viewBox="0 0 400 150" role="img" aria-label="Bonding curve preview" style="margin-top:10px"></svg>
+        <dl class="kv" id="econ" style="margin-top:12px"></dl>
+      </div>
+    </aside>
+  </form>
+</main>
+
+<footer>
+  <span>Demo: launches are saved in your browser only. On mainnet this form sends one transaction to RecycleLaunchpad on HyperEVM.</span>
+  <span>RECYCLE is an independent project built on top of Papertrade, not affiliated with or endorsed by the Papertrade team.</span>
+</footer>
+
+<script>
+/* RECYCLE demo data layer, shared by the Launchpad and Create pages.
+   Demo only: launches, buys and the wallet live in this browser (localStorage), nothing is on-chain. */
+const fmt = (x, d = 0) => Number(x).toLocaleString('en-US', {maximumFractionDigits: d, minimumFractionDigits: d});
+const usd = (x, d = 0) => '$' + fmt(x, d);
+const px = x => x < 0.001 ? '$' + Number(x).toPrecision(3) : usd(x, 4);
+const short = n => n >= 1e9 ? fmt(n / 1e9, 2) + 'B' : n >= 1e6 ? fmt(n / 1e6, 1) + 'M' : n >= 1e3 ? fmt(n / 1e3, 1) + 'k' : fmt(n);
+const HOUR = 3600e3;
+const CURVE_SUPPLY = 800e6, LP_SUPPLY = 200e6, TOTAL_SUPPLY = 1e9;
+const MINT = (window.RECYCLE_LIVE && window.RECYCLE_LIVE.rate > 0) ? window.RECYCLE_LIVE.rate : 100;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+
+/* ---------- storage (per browser, may be unavailable) ---------- */
+const KEY = 'recycle.demo.v1';
+let MEM = null;
+function store() {
+  if (!MEM) { try { MEM = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { MEM = {}; } }
+  MEM.created = MEM.created || []; MEM.state = MEM.state || {}; MEM.activity = MEM.activity || {};
+  return MEM;
+}
+function persist() { try { localStorage.setItem(KEY, JSON.stringify(MEM)); } catch (e) { /* in-memory only */ } }
+
+/* ---------- bonding curve: linear p0 -> p1 over 800M (same maths as RecycleLaunchpad.sol) ---------- */
+function curve(l) {
+  const slope = (l.p1 - l.p0) / CURVE_SUPPLY;
+  const price = s => l.p0 + slope * s;
+  return {
+    price,
+    cost: (s, a) => (price(s) + price(s + a)) / 2 * a,
+    tokensFor(s, spend) {
+      const p = price(s);
+      const x = slope === 0 ? spend / p : (-p + Math.sqrt(p * p + 2 * slope * spend)) / slope;
+      return Math.max(0, Math.min(x, CURVE_SUPPLY - s));
+    },
+    target: CURVE_SUPPLY * (l.p0 + l.p1) / 2,
+  };
+}
+
+/* ---------- vault presets ---------- */
+const VAULT_LABEL = {KAMIKAZE: 'Kamikaze', DELTA_NEUTRAL: 'Delta neutral', CUSTOM: 'Custom'};
+const PAY_LABEL = {PROOF_OF_LOSS: 'Proof of loss', HYBRID: 'Hybrid burn', PAPER: 'PAPER only'};
+function vaultSummary(v) {
+  if (v.mode === 'KAMIKAZE') return `${v.asset} ${v.leverage}x, ${Math.round(v.alloc * 100)}% per trade`;
+  if (v.mode === 'DELTA_NEUTRAL') return `${v.asset} pair, ${v.levMin}–${v.levMax}x dynamic`;
+  return `${v.asset} ${v.leverage}x ${v.direction}, TP ${v.tpMult}× / SL ${v.slMult}×`;
+}
+
+/* ---------- seed launches (fictional, demo) ---------- */
+function seed() {
+  const now = Date.now();
+  const v = (o) => Object.assign({mode: 'KAMIKAZE', asset: 'BTC', leverage: 100, alloc: 0.1, tpMult: 1, slMult: 1,
+    direction: 'random', profitToBuyback: 1, paperToHolders: 1, levMin: 20, levMax: 500, closeFrac: 0.5,
+    yieldToBuyback: 0, reserve: 0.1}, o);
+  return [
+    {id: 'mcall', name: 'Margin Call', symbol: 'MCALL', hue: 4, creator: '0x8f3a…21c9',
+     blurb: 'For everyone who got the email at 3am. Losses buy the ticket, profits burn the supply.',
+     pay: 'HYBRID', p0: 0.00001, p1: 0.00024, quote: 25, burnPerQuote: 50, vaultShare: 0.5,
+     lmEnd: now - 20 * HOUR, curveEnd: now + 52 * HOUR, sold: 0.62 * CURVE_SUPPLY, buyers: 412,
+     vault: v({mode: 'KAMIKAZE', leverage: 100})},
+    {id: 'larry', name: 'Liquidation Larry', symbol: 'LARRY', hue: 210, creator: '0x11be…9f04',
+     blurb: 'Larry never closes a trade. The protocol does it for him, and he gets tickets for it.',
+     pay: 'PROOF_OF_LOSS', p0: 0.000008, p1: 0.0002, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
+     lmEnd: now + 31 * HOUR, curveEnd: now + 103 * HOUR, sold: 0, buyers: 0, miners: 1874, paperMined: 3.1e9,
+     vault: v({mode: 'DELTA_NEUTRAL', levMin: 20, levMax: 500, closeFrac: 0.5, yieldToBuyback: 0.2})},
+    {id: 'rekt', name: 'Rekt Raccoon', symbol: 'RKT', hue: 150, creator: '0x4c02…aa17',
+     blurb: 'Raids the trash of liquidated longs. Graduated in 9 hours.',
+     pay: 'PROOF_OF_LOSS', p0: 0.00001, p1: 0.00024, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
+     lmEnd: now - 120 * HOUR, curveEnd: now - 96 * HOUR, sold: CURVE_SUPPLY, buyers: 1203, graduated: true,
+     vault: v({mode: 'KAMIKAZE', leverage: 1000, alloc: 0.02}),
+     live: {equity: 31840, priceMult: 3.4, burnedPct: 0.19, paperHolders: 2.38e6, trades: 61, wins: 27, liqs: 33}},
+    {id: 'phc', name: 'Paper Hands Club', symbol: 'PHC', hue: 280, creator: '0x9d71…03be',
+     blurb: 'Members sell at the bottom so you do not have to. Momentum vault on ETH.',
+     pay: 'PROOF_OF_LOSS', p0: 0.00001, p1: 0.00024, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
+     lmEnd: now - 6 * HOUR, curveEnd: now + 66 * HOUR, sold: 0.18 * CURVE_SUPPLY, buyers: 97,
+     vault: v({mode: 'CUSTOM', asset: 'ETH', leverage: 50, tpMult: 1.5, slMult: 0.6, direction: 'momentum', profitToBuyback: 0.5})},
+    {id: 'gobl', name: 'Funding Goblin', symbol: 'GOBL', hue: 95, creator: '0x2e88…c410',
+     blurb: 'Lives between the long and the short. Stakes every PAPER it mints.',
+     pay: 'PROOF_OF_LOSS', p0: 0.00001, p1: 0.00024, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
+     lmEnd: now - 300 * HOUR, curveEnd: now - 260 * HOUR, sold: CURVE_SUPPLY, buyers: 1630, graduated: true,
+     vault: v({mode: 'DELTA_NEUTRAL', yieldToBuyback: 0.2}),
+     live: {equity: 21400, priceMult: 1.08, burnedPct: 0.004, paperStaked: 61.6e6, trades: 214, wins: 214, liqs: 2, cycles: 0}},
+    {id: 'bust', name: 'Bust Price', symbol: 'BUST', hue: 30, creator: '0x70aa…5e3d',
+     blurb: 'Did not make it to graduation. Buyers can take their share of the raise back.',
+     pay: 'PROOF_OF_LOSS', p0: 0.00002, p1: 0.0005, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
+     lmEnd: now - 200 * HOUR, curveEnd: now - 30 * HOUR, sold: 0.07 * CURVE_SUPPLY, buyers: 38,
+     vault: v({mode: 'KAMIKAZE', leverage: 10, alloc: 0.25})},
+  ];
+}
+
+function launches() {
+  const s = store();
+  const all = seed().concat(s.created.map(c => Object.assign({}, c)));
+  for (const l of all) Object.assign(l, s.state[l.id] || {});    // demo buys, fast-forwards
+  return all;
+}
+
+function phase(l, now = Date.now()) {
+  if (now < l.lmEnd) return 'lm';
+  if (l.graduated || l.sold >= CURVE_SUPPLY - 1) return 'vl';
+  if (now < l.curveEnd) return 'bc';
+  return 'rf';
+}
+const PHASE = {lm: 'Loss Mining', bc: 'Bonding curve', vl: 'Vault live', rf: 'Refunding'};
+
+function countdown(ms) {
+  if (ms <= 0) return 'ended';
+  const h = Math.floor(ms / HOUR), m = Math.floor((ms % HOUR) / 60000);
+  return h >= 48 ? `${Math.floor(h / 24)}d ${h % 24}h` : `${h}h ${String(m).padStart(2, '0')}m`;
+}
+
+function avatar(l, size = 48) {
+  const style = l.image ? `background-image:url(${l.image})` : `background:hsl(${l.hue} 55% 42%)`;
+  return `<span class="avatar" style="width:${size}px;height:${size}px;font-size:${size * 0.38}px;${style}" aria-hidden="true">${l.image ? '' : esc(l.symbol.slice(0, 2))}</span>`;
+}
+
+/* ---------- demo wallet ---------- */
+function wallet() { return store().wallet || null; }
+function connectWallet() {
+  const s = store();
+  if (!s.wallet) {
+    const hex = Array.from({length: 40}, () => '0123456789abcdef'[Math.floor(Math.random() * 16)]).join('');
+    // demo allowance: 120 tickets ($3,000 of buying at $25/ticket) and 1.44M PAPER minted this window
+    s.wallet = {address: '0x' + hex, tickets: 120, paperMined: 1.44e6, holdings: {}};
+    persist();
+  }
+  renderWallet();
+  document.dispatchEvent(new CustomEvent('wallet'));
+}
+function renderWallet() {
+  const b = document.getElementById('wallet-btn');
+  if (!b) return;
+  const w = wallet();
+  if (w) { b.innerHTML = `${w.address.slice(0, 6)}…${w.address.slice(-4)} · <b>${fmt(w.tickets)} tickets</b>`; b.classList.add('on'); }
+  else { b.textContent = 'Connect demo wallet'; b.classList.remove('on'); }
+}
+
+/* Streamlit renders each page in a sandboxed iframe that cannot navigate the top window itself;
+   a link clicked in the (same-origin) parent document can. */
+function goTop(href) {
+  try {
+    const a = parent.document.createElement('a');
+    a.href = href; parent.document.body.appendChild(a); a.click(); a.remove();
+  } catch (e) { location.href = href; }
+}
+
+/* ---------- nav: relative links in the artifact, Streamlit routes when hosted there ---------- */
+function setupNav(current) {
+  const host = window.RECYCLE_HOST || '';
+  const routes = host === 'streamlit' ? {home: '/', launchpad: '/launchpad', create: '/create'}
+                                      : {home: './', launchpad: 'launchpad.html', create: 'create.html'};
+  document.querySelectorAll('[data-route]').forEach(a => {
+    a.href = routes[a.dataset.route];
+    if (host === 'streamlit' && !a.dataset.bound) {
+      a.dataset.bound = '1';
+      a.addEventListener('click', e => { e.preventDefault(); goTop(a.getAttribute('href')); });
+    }
+    if (a.dataset.route === current && a.closest('.links')) a.setAttribute('aria-current', 'page');
+  });
+  const b = document.getElementById('wallet-btn');
+  if (b) b.addEventListener('click', () => wallet() ? null : connectWallet());
+  renderWallet();
+}
+
+
+const $ = id => document.getElementById(id);
+let IMAGE = null;
+
+function val() {
+  const r = n => document.querySelector(`input[name=${n}]:checked`).value;
+  return {
+    name: $('name').value.trim(), symbol: $('symbol').value.trim().toUpperCase(), blurb: $('blurb').value.trim(),
+    hue: +$('hue').value, image: IMAGE,
+    lmHours: +$('lmh').value, paperPerTicket: +$('ppt').value, cap: +$('cap').value, liqBonus: +$('liq').value / 100,
+    pay: r('pay'), p0: +$('p0').value, p1: +$('p1').value, quote: +$('quote').value, days: +$('days').value,
+    burnPerQuote: +$('burn').value, vaultShare: +$('share').value / 100,
+    vault: {mode: r('mode'), asset: $('asset').value, leverage: +$('lev').value, alloc: +$('alloc').value,
+      levMin: +$('lmin').value, levMax: +$('lmax').value, tpMult: r('mode') === 'CUSTOM' ? +$('tp').value : 1,
+      slMult: r('mode') === 'CUSTOM' ? +$('sl').value : 1, direction: r('mode') === 'CUSTOM' ? $('dir').value : 'random',
+      profitToBuyback: r('mode') === 'CUSTOM' ? +$('pbb').value / 100 : 1, paperToHolders: r('mode') === 'CUSTOM' ? +$('pth').value / 100 : 1,
+      closeFrac: +$('cf').value / 100, yieldToBuyback: +$('ytb').value / 100},
+  };
+}
+
+function errors(v) {
+  const e = {};
+  if (v.name.length < 2) e.e1 = 'Give the token a name (2 to 32 characters).';
+  else if (!/^[A-Z0-9]{2,8}$/.test(v.symbol)) e.e1 = 'Ticker: 2 to 8 letters or digits.';
+  else if (launches().some(l => l.symbol === v.symbol)) e.e1 = `$${v.symbol} is already on the Launchpad. Pick another ticker.`;
+  if (!(v.p0 > 0) || !(v.p1 > 0)) e.e3 = 'Both prices must be above zero.';
+  else if (v.p1 < v.p0) e.e3 = 'The graduation price must be at least the start price.';
+  else if (!(v.quote > 0)) e.e3 = 'USDC per ticket must be above zero.';
+  if (v.vault.mode === 'DELTA_NEUTRAL' && !(v.vault.levMin >= 1 && v.vault.levMin <= v.vault.levMax && v.vault.levMax <= 1000))
+    e.vault = 'Delta neutral leverage range must be 1 ≤ min ≤ max ≤ 1000.';
+  return e;
+}
+
+function checks(v) {
+  const c = curve(v), target = c.target, toVault = v.pay === 'PAPER' ? 0 : target * v.vaultShare, toLp = target - toVault;
+  const out = [];
+  const poolPx = toLp / LP_SUPPLY;
+  out.push(Math.abs(poolPx / v.p1 - 1) <= 0.25
+    ? ['ok', `DEX pool opens at ${px(poolPx)}, close to the graduation price.`]
+    : ['warn', `DEX pool opens at ${px(poolPx)} vs a graduation price of ${px(v.p1)}: buyers at the top of the curve start ${poolPx < v.p1 ? 'under water' : 'in profit'}. Move the raise split or the prices.`]);
+  if (v.pay === 'PROOF_OF_LOSS') out.push(['ok', 'Proof of loss works with PAPER as it is today.']);
+  else out.push(['warn', `${PAY_LABEL[v.pay]} needs PAPER to be transferable. Until Papertrade enables it, buys revert.`]);
+  if (v.pay === 'PAPER') out.push(['warn', 'No USDC is raised: the vault starts with staked PAPER only and trades on its yield.']);
+  const m = v.vault;
+  let notional;
+  if (m.mode === 'DELTA_NEUTRAL') notional = toVault * 0.5 / 2 * m.levMin;   // per leg, at the lowest leverage
+  else notional = toVault * m.alloc * m.leverage;
+  if (v.pay !== 'PAPER') out.push(notional >= 10000
+    ? ['ok', `First vault position: at least ${usd(notional)} notional${m.mode === 'DELTA_NEUTRAL' ? ' per leg' : ''}, above Papertrade's $10,000 minimum.`]
+    : ['warn', `First vault position would be ${usd(notional)} notional, under Papertrade's $10,000 minimum. Raise the margin per trade or the leverage.`]);
+  if (m.mode !== 'DELTA_NEUTRAL' && m.leverage >= 500) out.push(['warn', `At ${m.leverage}x the liquidation distance is ${fmt((1 / m.leverage - 0.00048) * 100, 3)}%: in our simulations such vaults are wiped out within days, turning the capital into burns and PAPER for holders.`]);
+  const errs = errors(v);
+  if (errs.vault) out.push(['err', errs.vault]);
+  return out;
+}
+
+function wad(x, decimals) { // price in USD per meme -> quote base units per whole meme x 1e18
+  const base = BigInt(Math.round(x * 10 ** 12));            // 1e-12 USD precision
+  return (base * 10n ** BigInt(decimals + 18 - 12)).toString();
+}
+
+function callJson(v) {
+  const now = Math.floor(Date.now() / 1000);
+  const e18 = n => (BigInt(Math.round(n)) * 10n ** 18n).toString();
+  const qd = v.pay === 'PAPER' ? 18 : 6;
+  return JSON.stringify({
+    name: v.name, symbol: v.symbol, pay: v.pay,
+    curveSupply: e18(CURVE_SUPPLY), lpSupply: e18(LP_SUPPLY),
+    p0Wad: wad(v.p0, qd), p1Wad: wad(v.p1, qd),
+    quotePerTicket: (BigInt(Math.round(v.quote * 1e6)) * (qd === 18 ? 10n ** 12n : 1n)).toString(),
+    burnPerQuote: v.pay === 'HYBRID' ? (BigInt(Math.round(v.burnPerQuote)) * 10n ** 12n).toString() : '0',
+    paperBurnBps: v.pay === 'PAPER' ? 5000 : 0, vaultBps: Math.round(v.vaultShare * 10000),
+    deadline: now + (v.lmHours + v.days * 24) * 3600,
+    vault: {mode: v.vault.mode, asset: v.vault.asset, leverage: v.vault.mode === 'DELTA_NEUTRAL' ? 0 : v.vault.leverage,
+      levMin: v.vault.mode === 'DELTA_NEUTRAL' ? v.vault.levMin : 0, levMax: v.vault.mode === 'DELTA_NEUTRAL' ? v.vault.levMax : 0,
+      allocBps: Math.round((v.vault.mode === 'DELTA_NEUTRAL' ? 0.5 : v.vault.alloc) * 10000),
+      profitToBuybackBps: Math.round(v.vault.profitToBuyback * 10000), paperToHoldersBps: Math.round(v.vault.paperToHolders * 10000),
+      yieldToBuybackBps: Math.round(v.vault.yieldToBuyback * 10000), reserveBps: 1000},
+    lossMining: {windowHours: v.lmHours, paperPerTicket: v.paperPerTicket, capPerWallet: v.cap, liquidationBonusBps: Math.round(v.liqBonus * 10000)},
+  }, null, 2);
+}
+
+function miniCurve(v) {
+  const svg = $('mini'), W = 400, H = 150, L = 8, R = 8, T = 14, B = 22;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  if (!(v.p0 > 0 && v.p1 >= v.p0)) { svg.innerHTML = ''; return; }
+  const top = v.p1 * 1.1, X = s => L + (W - L - R) * s / CURVE_SUPPLY, Y = p => T + (H - T - B) * (1 - p / top);
+  const share = v.pay === 'PAPER' ? 0 : v.vaultShare;
+  svg.innerHTML = `<path d="M${X(0)} ${Y(0)} L${X(0)} ${Y(v.p0)} L${X(CURVE_SUPPLY)} ${Y(v.p1)} L${X(CURVE_SUPPLY)} ${Y(0)} Z" fill="${css('--accent')}" fill-opacity=".14"/>
+    <line x1="${X(0)}" y1="${Y(v.p0)}" x2="${X(CURVE_SUPPLY)}" y2="${Y(v.p1)}" stroke="${css('--accent')}" stroke-width="2.5"/>
+    <line x1="${L}" x2="${W - R}" y1="${Y(0)}" y2="${Y(0)}" class="grid"/>
+    <text x="${L}" y="${H - 6}">${px(v.p0)}</text><text x="${W - R}" y="${H - 6}" text-anchor="end">${px(v.p1)} at 800M sold</text>
+    <text x="${L + 4}" y="${T + 6}" style="fill:${css('--ink')}">${usd(curve(v).target)} raised · ${Math.round(share * 100)}% to the vault</text>`;
+}
+
+function render() {
+  const v = val(), c = curve(v);
+  document.querySelectorAll('[data-m]').forEach(el => el.hidden = !el.dataset.m.split(' ').includes(v.vault.mode));
+  $('burn').closest('label').hidden = v.pay !== 'HYBRID';
+  $('liq-v').textContent = v.liqBonus ? `up to +${Math.round(v.liqBonus * 100)}% tickets for 10+ liquidations` : 'no bonus';
+  $('share-v').textContent = v.pay === 'PAPER' ? 'not used: PAPER-only launches raise no USDC'
+    : `${Math.round(v.vaultShare * 100)}% to the vault, ${100 - Math.round(v.vaultShare * 100)}% to the DEX pool`;
+  $('mc0').textContent = v.p0 > 0 ? `market cap ${usd(v.p0 * TOTAL_SUPPLY)}` : '';
+  $('mc1').textContent = v.p1 > 0 ? `market cap ${usd(v.p1 * TOTAL_SUPPLY)}` : '';
+  $('pbb-v').textContent = `${$('pbb').value}% (rest stays in the vault)`;
+  $('pth-v').textContent = `${$('pth').value}% (rest staked by the vault)`;
+  $('cf-v').textContent = `${$('cf').value}% of the liquidation distance`;
+  $('ytb-v').textContent = `${$('ytb').value}% of claimed USDC`;
+  const pl = {name: v.name || 'Your token', symbol: v.symbol || 'TICKER', hue: v.hue, image: IMAGE};
+  $('av').innerHTML = avatar(pl, 64);
+  const ok = v.p0 > 0 && v.p1 >= v.p0;
+  $('preview').innerHTML = `<p class="eyebrow">Launch card preview</p>
+    <div class="top">${avatar(pl)}<div><div class="nm">${esc(pl.name)}</div><div class="sym">$${esc(pl.symbol)}</div></div>
+      <span class="tag lm" style="margin-left:auto"><span class="dot"></span>Loss Mining</span></div>
+    <p class="muted" style="font-size:14px;min-height:1.5em">${esc(v.blurb || 'Your one-line pitch shows here.')}</p>
+    <div style="display:flex;justify-content:space-between;font-size:13px"><span>Opens to buyers in</span><span class="num">${v.lmHours >= 48 ? v.lmHours / 24 + ' days' : v.lmHours + ' hours'}</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag">${PAY_LABEL[v.pay]}</span><span class="tag">${VAULT_LABEL[v.vault.mode]} · ${v.vault.asset}</span></div>`;
+  miniCurve(v);
+  const toVault = v.pay === 'PAPER' ? 0 : c.target * v.vaultShare;
+  $('econ').innerHTML = ok ? `<dt>Raise target</dt><dd>${v.pay === 'PAPER' ? 'in PAPER' : usd(c.target)}</dd>
+    <dt>To the vault</dt><dd>${v.pay === 'PAPER' ? 'staked PAPER' : usd(toVault)}</dd>
+    <dt>To the DEX pool</dt><dd>${v.pay === 'PAPER' ? '—' : usd(c.target - toVault)} + ${short(LP_SUPPLY)} $${esc(pl.symbol)}</dd>
+    <dt>Tickets to fill the curve</dt><dd>${fmt(Math.ceil(c.target / v.quote))}</dd>
+    <dt>Vault plan</dt><dd>${esc(vaultSummary(v.vault))}</dd>` : '';
+  $('checks').innerHTML = checks(v).map(([k, t]) => `<li><span class="i ${k}">${k === 'ok' ? '✓' : k === 'warn' ? '!' : '×'}</span><span>${esc(t)}</span></li>`).join('');
+  $('call').textContent = ok ? callJson(v) : '';
+  const e = errors(v);
+  for (const k of ['e1', 'e3']) { $(k).hidden = !e[k] || !TOUCHED; $(k).textContent = e[k] || ''; }
+}
+let TOUCHED = false;
+
+$('f').addEventListener('input', render);
+$('f').addEventListener('change', render);
+$('symbol').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+$('img').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) { IMAGE = null; render(); return; }
+  if (file.size > 300 * 1024) { $('e1').hidden = false; $('e1').textContent = 'Image is over 300 KB. Pick a smaller one.'; e.target.value = ''; return; }
+  const r = new FileReader();
+  r.onload = () => { IMAGE = r.result; render(); };
+  r.readAsDataURL(file);
+});
+
+$('f').addEventListener('submit', e => {
+  e.preventDefault();
+  TOUCHED = true;
+  const v = val(), errs = errors(v);
+  render();
+  const first = errs.e1 ? 'h1s' : errs.e3 ? 'h3s' : errs.vault ? 'h4s' : null;
+  if (first) { document.getElementById(first).scrollIntoView({behavior: 'smooth', block: 'center'}); $('status').className = 'err'; $('status').textContent = 'Fix the highlighted fields first.'; return; }
+  const s = store(), now = Date.now();
+  let id = v.symbol.toLowerCase(), n = 2;
+  while (launches().some(l => l.id === id)) id = v.symbol.toLowerCase() + n++;
+  const w = wallet();
+  s.created.push({id, name: v.name, symbol: v.symbol, blurb: v.blurb, hue: v.hue, image: v.image, created: now,
+    creator: w ? `${w.address.slice(0, 6)}…${w.address.slice(-4)} (you)` : 'you',
+    pay: v.pay, p0: v.p0, p1: v.p1, quote: v.quote, burnPerQuote: v.pay === 'HYBRID' ? v.burnPerQuote : 0, vaultShare: v.vaultShare,
+    lmEnd: now + v.lmHours * HOUR, curveEnd: now + (v.lmHours + v.days * 24) * HOUR, sold: 0, buyers: 0, miners: 0, paperMined: 0,
+    lossMining: {paperPerTicket: v.paperPerTicket, cap: v.cap, liqBonus: v.liqBonus}, vault: v.vault});
+  s.focus = id;
+  persist();
+  $('status').className = 'ok';
+  $('status').innerHTML = `$${esc(v.symbol)} created. Its Loss Mining window is open. <a data-route="launchpad" id="status-link">Open it on the Launchpad →</a>`;
+  setupNav('create');
+  $('status-link').href += (window.RECYCLE_HOST === 'streamlit' ? '' : '#' + id);
+});
+
+setupNav('create');
+render();
+</script>
+</body></html>
