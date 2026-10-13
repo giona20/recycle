@@ -1,4 +1,4 @@
-# RECYCLE demo site
+# RECYCLE demo site 
 
 Three pages, all demo (nothing on-chain):
 
