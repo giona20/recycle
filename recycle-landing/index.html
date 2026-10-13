@@ -1,0 +1,411 @@
+<title>RECYCLE Launchpad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a recycling loop. Hero = the loop itself; then the three phases as a real sequence,
+   the vault modes as a switchable panel, a simulation dashboard, and a liquidation-receipt waitlist. */
+:root{
+  --bg:#eef2ef; --surface:#f8faf8; --ink:#141a17; --muted:#56615b; --rule:#cfd8d2;
+  --accent:#16834a; --accent-ink:#ffffff; --loss:#c8372d; --paper:#e7ebe6;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1311; --surface:#151c19; --ink:#e9efeb; --muted:#9aa8a0; --rule:#2a3530;
+  --accent:#3ecf7f; --accent-ink:#06210f; --loss:#ff6b5e; --paper:#1b2420;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1311; --surface:#151c19; --ink:#e9efeb; --muted:#9aa8a0; --rule:#2a3530;
+  --accent:#3ecf7f; --accent-ink:#06210f; --loss:#ff6b5e; --paper:#1b2420;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--body);padding-inline:20px;padding-block:0 48px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:88px}
+h1,h2,h3{font-family:var(--display);font-weight:800;line-height:.95;margin:0;text-wrap:balance;letter-spacing:.005em}
+h2{font-size:clamp(34px,5vw,52px);text-transform:uppercase}
+h3{font-size:24px;text-transform:uppercase}
+p{margin:0;max-width:62ch}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* nav */
+nav{display:flex;justify-content:space-between;align-items:center;padding-block:20px;max-width:1080px;margin:0 auto;gap:12px;flex-wrap:wrap}
+.logo{font:900 26px/1 var(--display);letter-spacing:.04em;display:flex;align-items:center;gap:10px}
+.logo svg{width:28px;height:28px}
+.pill{font:600 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);padding:8px 12px;border-radius:999px;color:var(--muted)}
+.pill b{color:var(--accent)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding-top:24px}
+.hero h1{font-size:clamp(56px,10vw,118px);text-transform:uppercase;font-weight:900}
+.hero h1 em{font-style:normal;color:var(--loss);text-decoration:line-through;text-decoration-thickness:6px}
+.hero h1 span{color:var(--accent)}
+.hero .lede{font-size:19px;color:var(--muted);margin-top:22px}
+.cta{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+.btn{font:600 15px/1 var(--body);padding:15px 22px;border-radius:4px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:hover{transform:translateY(-1px)}
+.loop{width:100%;max-width:440px;justify-self:center}
+.loop text{font-family:var(--mono);font-size:13px;fill:var(--ink)}
+.loop .lbl{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.04em}
+.loop .ring{fill:none;stroke:var(--rule);stroke-width:30}
+.loop .arc{fill:none;stroke-width:30;stroke-linecap:butt}
+@media (prefers-reduced-motion:no-preference){.loop .spin{animation:spin 40s linear infinite;transform-origin:220px 220px}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* phases */
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:2px solid var(--ink)}
+.phase{padding:24px 22px 8px 0;display:flex;flex-direction:column;gap:12px;min-width:0}
+.phase+.phase{border-left:1px solid var(--rule);padding-left:22px}
+.phase .n{font:900 64px/1 var(--display);color:var(--accent)}
+.phase p{color:var(--muted);font-size:15px}
+.phase .tag{font:600 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--paper);padding:6px 8px;align-self:flex-start;border-radius:2px}
+.sec-head{display:flex;flex-direction:column;gap:14px;margin-bottom:28px}
+
+/* modes */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.tab{font:600 14px/1 var(--mono);padding:11px 14px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:3px;cursor:pointer}
+.tab[aria-selected="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.mode{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;background:var(--surface);border:1px solid var(--rule);padding:28px;border-radius:6px}
+.mode .flow{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.flow div{display:grid;grid-template-columns:88px 1fr;gap:12px;font-size:15px;align-items:baseline}
+.flow .k{font:600 12px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.06em}
+.k.win{color:var(--accent)} .k.loss{color:var(--loss)} .k.cfg{color:var(--muted)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);align-self:start}
+.stat{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.stat .v{font:800 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.stat .v.neg{color:var(--loss)} .stat .v.pos{color:var(--accent)}
+
+/* dashboard */
+.dash{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:20px;min-width:0;position:relative}
+.card h3{font-size:20px;margin-bottom:4px}
+.card .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.chart .grid{stroke:var(--rule);stroke-width:1}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:3px;margin-right:6px;vertical-align:middle;border-radius:2px}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font:12px/1.4 var(--mono);padding:7px 9px;border-radius:3px;white-space:nowrap;z-index:2}
+.note{font-size:13px;color:var(--muted);grid-column:1/-1}
+.tablewrap{overflow-x:auto;grid-column:1/-1}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th,td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+th{font:600 11px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+
+/* receipt + waitlist */
+.join{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
+.receipt{background:var(--surface);font-family:var(--mono);font-size:13.5px;padding:26px 24px 30px;position:relative;
+  -webkit-mask:radial-gradient(circle 7px at 50% 0,#0000 98%,#000) 50% 0/18px 100%,radial-gradient(circle 7px at 50% 100%,#0000 98%,#000) 50% 100%/18px 100%;
+  -webkit-mask-composite:source-in;mask-composite:intersect;border-inline:1px solid var(--rule)}
+.receipt .head{text-align:center;font-weight:600;letter-spacing:.12em;margin-bottom:6px}
+.receipt .dash-line{border-top:1px dashed var(--muted);margin:12px 0}
+.receipt .row{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.receipt .row.big{font-weight:600;font-size:16px}
+.receipt label{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.receipt input{font:inherit;width:140px;text-align:right;background:var(--bg);color:var(--ink);border:1px solid var(--rule);padding:6px 8px;border-radius:2px}
+.receipt .red{color:var(--loss)} .receipt .green{color:var(--accent)}
+form{display:flex;flex-direction:column;gap:14px}
+form label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:500}
+form input{font:15px var(--mono);padding:12px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:3px;width:100%}
+form input:focus{border-color:var(--accent);outline:none}
+.status{font-size:14px;min-height:1.4em}
+.status.ok{color:var(--accent)} .status.err{color:var(--loss)}
+.count{font:800 44px/1 var(--display)}
+footer{border-top:1px solid var(--rule);padding-top:20px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+
+@media (max-width:820px){
+  .hero,.mode,.dash,.join{grid-template-columns:1fr}
+  .phases{grid-template-columns:1fr}
+  .phase+.phase{border-left:0;border-top:1px solid var(--rule);padding-left:0}
+  .loop{max-width:320px}
+  .wrap{gap:64px}
+}
+</style>
+
+<nav aria-label="Main">
+  <div class="logo">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3a13 13 0 1 1-11.3 6.6" fill="none" stroke="var(--accent)" stroke-width="4"/><path d="M2 4l3 6 6-3" fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-linejoin="round"/></svg>
+    RECYCLE
+  </div>
+  <span class="pill">Built on <b>Papertrade</b> · HyperEVM · coming soon</span>
+</nav>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Meme coin launchpad · Season 0</p>
+      <h1 style="margin-top:16px">Your <em>loss</em><br>is your <span>ticket</span></h1>
+      <p class="lede">On Papertrade every loss mints PAPER. RECYCLE turns that PAPER into access to meme coin launches, and the liquidity those launches raise goes back to trading. Losses never leave the system. They circulate.</p>
+      <div class="cta">
+        <a class="btn primary" href="#join">Join the waitlist</a>
+        <a class="btn" href="#modes">How the vault works</a>
+      </div>
+    </div>
+    <svg class="loop" viewBox="0 0 440 440" role="img" aria-label="Cycle: loss on Papertrade, ticket, PAPER burn on the bonding curve, vault trading back on Papertrade">
+      <g class="spin">
+        <circle class="ring" cx="220" cy="220" r="160"/>
+        <path class="arc" stroke="var(--loss)" d="M220 60 A160 160 0 0 1 380 220"/>
+        <path class="arc" stroke="var(--s1)" d="M380 220 A160 160 0 0 1 220 380"/>
+        <path class="arc" stroke="var(--accent)" d="M220 380 A160 160 0 0 1 60 220"/>
+        <path class="arc" stroke="var(--s2)" d="M60 220 A160 160 0 0 1 220 60"/>
+      </g>
+      <text class="lbl" x="318" y="96">LOSS</text>
+      <text x="318" y="114">on Papertrade</text>
+      <text class="lbl" x="318" y="356">TICKET</text>
+      <text x="318" y="374">Loss Mining</text>
+      <text class="lbl" x="22" y="356">BURN</text>
+      <text x="22" y="374">bonding curve</text>
+      <text class="lbl" x="22" y="96">VAULT</text>
+      <text x="22" y="114">trades again</text>
+      <text x="220" y="214" text-anchor="middle" class="lbl" style="font-size:34px">♻</text>
+      <text x="220" y="240" text-anchor="middle">100 PAPER per $1 lost</text>
+    </svg>
+  </section>
+
+  <section aria-labelledby="how">
+    <div class="sec-head">
+      <p class="eyebrow">Three phases, in order</p>
+      <h2 id="how">How a launch works</h2>
+    </div>
+    <div class="phases">
+      <article class="phase">
+        <span class="n">1</span>
+        <h3>Loss Mining</h3>
+        <p>A window opens before each launch. The protocol measures how much PAPER every wallet minted on Papertrade. PAPER only comes from losing closes and liquidations, so it is a proof of loss anyone can verify on-chain. More PAPER means more tickets, on a square-root curve that caps whales.</p>
+        <span class="tag">PAPER snapshot · Merkle root on-chain</span>
+      </article>
+      <article class="phase">
+        <span class="n">2</span>
+        <h3>Bonding curve</h3>
+        <p>Only ticket holders can buy. Each ticket unlocks a slice of buying power. Once PAPER is transferable, every buy burns PAPER; until then buyers pay in USDC and tickets are the filter. If a launch does not graduate before its deadline, buyers get a pro-rata refund.</p>
+        <span class="tag">PROOF OF LOSS · HYBRID · PAPER</span>
+      </article>
+      <article class="phase">
+        <span class="n">3</span>
+        <h3>Vault</h3>
+        <p>At graduation half the raise goes to DEX liquidity and half to a vault that trades BTC or ETH under rules the creator picks at launch. Profits buy back and burn the meme. Losses mint PAPER for holders or for staking.</p>
+        <span class="tag">immutable rules · on-chain keeper</span>
+      </article>
+    </div>
+  </section>
+
+  <section id="modes" aria-labelledby="modes-h">
+    <div class="sec-head">
+      <p class="eyebrow">Phase 3 · the creator chooses</p>
+      <h2 id="modes-h">Three vaults, one choice at launch</h2>
+      <p style="color:var(--muted)">The creator picks the mode when creating the meme, and the contract locks it forever. The keeper decides when to enter; the contract enforces leverage, allocation and where the money goes.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Vault modes">
+      <button class="tab" role="tab" id="t-kk" aria-selected="true" aria-controls="mode-panel" data-m="kk">Kamikaze</button>
+      <button class="tab" role="tab" id="t-dn" aria-selected="false" aria-controls="mode-panel" data-m="dn">Regenerative delta neutral</button>
+      <button class="tab" role="tab" id="t-cu" aria-selected="false" aria-controls="mode-panel" data-m="cu">Custom</button>
+    </div>
+    <div class="mode" id="mode-panel" role="tabpanel"></div>
+  </section>
+
+  <section aria-labelledby="dash-h">
+    <div class="sec-head">
+      <p class="eyebrow">Dashboard preview · simulated data</p>
+      <h2 id="dash-h">What happens in 90 days</h2>
+      <p style="color:var(--muted)">Monte Carlo simulation: $50k vault, $50k pool, 80 fat-tailed BTC/ETH paths, real Papertrade rules (100 PAPER minted per $1, haircut on wins, 2% fee, $10k minimum notional). At launch this section will show live data.</p>
+    </div>
+    <div class="dash">
+      <div class="card">
+        <h3>Meme price</h3>
+        <p class="sub">Multiple of the launch price after 90 days. Bar = 10th–90th percentile, dot = median.</p>
+        <svg class="chart" id="c-range" viewBox="0 0 480 250" role="img" aria-label="Meme price multiple range by preset"></svg>
+      </div>
+      <div class="card">
+        <h3>Regenerative vault</h3>
+        <p class="sub">One delta-neutral path: capital turns into staked PAPER, and the cycle yield climbs toward 100% of the starting capital.</p>
+        <svg class="chart" id="c-dn" viewBox="0 0 480 250" role="img" aria-label="Vault equity and cumulative cycle yield"></svg>
+        <div class="legend"><span><i style="background:var(--s1)"></i>Vault equity</span><span><i style="background:var(--s3)"></i>Cycle staking yield</span></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Preset</th><th>Vault (median)</th><th>Vault wiped out</th><th>Meme ×</th><th>Pool burned</th><th>PAPER to holders*</th><th>PAPER staked</th></tr></thead>
+          <tbody id="tbl"></tbody>
+        </table>
+      </div>
+      <p class="note">* implied value of the PAPER distributed, based on today's staking cash flows (an assumption). Directional vaults almost always lose their capital, by design: it turns into burned meme and PAPER for holders. This is not a promise of returns.</p>
+    </div>
+  </section>
+
+  <section id="join" class="join" aria-labelledby="join-h">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <p class="eyebrow">Calculate your tickets</p>
+      <h2 id="join-h">Your liquidation receipt</h2>
+      <div class="receipt" aria-live="polite">
+        <div class="head">PAPERTRADE · LOSS RECEIPT</div>
+        <div class="dash-line"></div>
+        <label for="loss">Realized loss ($) <input id="loss" type="number" min="0" step="10" value="2500" inputmode="decimal"></label>
+        <div class="row"><span>Mint rate</span><span>100 PAPER / $</span></div>
+        <div class="row"><span>PAPER minted</span><span id="r-paper" class="red">—</span></div>
+        <div class="dash-line"></div>
+        <div class="row"><span>Tickets (√ PAPER / 10k)</span><span id="r-tix">—</span></div>
+        <div class="row"><span>Cap per wallet</span><span>500</span></div>
+        <div class="row big"><span>Buying power</span><span id="r-buy" class="green">—</span></div>
+        <div class="dash-line"></div>
+        <div style="text-align:center;font-size:12px;color:var(--muted)">Example parameters · each launch sets its own on-chain</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <p class="eyebrow">Season 0 waitlist</p>
+      <p>Register the wallet you trade with on Papertrade. We will include it in the snapshot for the first Loss Mining window.</p>
+      <form id="wl" novalidate>
+        <label for="wallet">Papertrade wallet
+          <input id="wallet" name="wallet" placeholder="0x…" autocomplete="off" spellcheck="false" required>
+        </label>
+        <label for="handle">X account (optional)
+          <input id="handle" name="handle" placeholder="@" autocomplete="off">
+        </label>
+        <button class="btn primary" type="submit" id="wl-btn">Register wallet</button>
+        <p class="status" id="wl-status" role="status"></p>
+      </form>
+      <div id="wl-count-box" hidden><span class="count" id="wl-count">—</span> <span style="color:var(--muted)">wallets on the waitlist</span></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>RECYCLE is an independent project built on top of Papertrade. It is not affiliated with or endorsed by the Papertrade team.</span>
+    <span>Leveraged trading and meme coins can wipe out your capital. Nothing on this page is financial advice.</span>
+  </footer>
+</main>
+
+<script>
+const D = {"presets":[{"name":"Kamikaze 10x","vault_med":-0.578,"dead":0.0,"meme_med":2.55,"meme_p10":1.18,"meme_p90":4.82,"paper_usd":17585,"staked":0,"cycles":0.0,"burn":0.264},{"name":"Kamikaze 100x","vault_med":-1.0,"dead":1.0,"meme_med":3.83,"meme_p10":1.9,"meme_p90":7.75,"paper_usd":30409,"staked":0,"cycles":0.0,"burn":0.327},{"name":"Kamikaze 1000x","vault_med":-0.999,"dead":1.0,"meme_med":5.03,"meme_p10":3.12,"meme_p90":9.32,"paper_usd":30387,"staked":0,"cycles":0.0,"burn":0.36},{"name":"Regenerative delta neutral","vault_med":-0.899,"dead":0.0,"meme_med":1.03,"meme_p10":0.61,"meme_p90":1.7,"paper_usd":0,"staked":65249464,"cycles":0.0,"burn":0.0},{"name":"Custom ETH 50x momentum","vault_med":-0.997,"dead":1.0,"meme_med":3.12,"meme_p10":1.66,"meme_p90":5.35,"paper_usd":51864,"staked":0,"cycles":0.0,"burn":0.297}],"dn":{"t":[0.041666666666666664,1.0416666666666667,2.0416666666666665,3.0416666666666665,4.041666666666667,5.041666666666667,6.041666666666667,7.041666666666667,8.041666666666666,9.041666666666666,10.041666666666666,11.041666666666666,12.041666666666666,13.041666666666666,14.041666666666666,15.041666666666666,16.041666666666668,17.041666666666668,18.041666666666668,19.041666666666668,20.041666666666668,21.041666666666668,22.041666666666668,23.041666666666668,24.041666666666668,25.041666666666668,26.041666666666668,27.041666666666668,28.041666666666668,29.041666666666668,30.041666666666668,31.041666666666668,32.041666666666664,33.041666666666664,34.041666666666664,35.041666666666664,36.041666666666664,37.041666666666664,38.041666666666664,39.041666666666664,40.041666666666664,41.041666666666664,42.041666666666664,43.041666666666664,44.041666666666664,45.041666666666664,46.041666666666664,47.041666666666664,48.041666666666664,49.041666666666664,50.041666666666664,51.041666666666664,52.041666666666664,53.041666666666664,54.041666666666664,55.041666666666664,56.041666666666664,57.041666666666664,58.041666666666664,59.041666666666664,60.041666666666664,61.041666666666664,62.041666666666664,63.041666666666664,64.04166666666667,65.04166666666667,66.04166666666667,67.04166666666667,68.04166666666667,69.04166666666667,70.04166666666667,71.04166666666667,72.04166666666667,73.04166666666667,74.04166666666667,75.04166666666667,76.04166666666667,77.04166666666667,78.04166666666667,79.04166666666667,80.04166666666667,81.04166666666667,82.04166666666667,83.04166666666667,84.04166666666667,85.04166666666667,86.04166666666667,87.04166666666667,88.04166666666667,89.04166666666667],"equity":[50000,47070,40651,36645,31992,28345,26297,22140,20617,17728,16583,15083,13368,12848,11996,10874,9956,9773,8765,7488,7125,6823,6760,6580,6423,6414,5990,5746,5680,5857,5570,5538,5783,5731,5512,6053,6202,6093,6022,5952,5784,5446,5982,6011,5629,5591,5460,5782,5745,5597,5520,6045,5669,5600,5435,5669,5515,6030,5434,5947,5438,5440,5754,5743,5830,5736,5646,5636,5611,5485,5674,5665,5526,5477,5659,5550,5470,5293,5461,5937,5836,6689,6602,6593,6104,5883,5465,5928,5972,5457],"yield":[0,78,235,438,690,991,1316,1689,2079,2502,2937,3389,3860,4337,4823,5320,5828,6337,6855,7386,7922,8460,9000,9539,10083,10627,11174,11723,12272,12819,13368,13917,14463,15008,15555,16097,16636,17176,17715,18254,18794,19335,19871,20405,20941,21477,22012,22543,23073,23604,24133,24658,25183,25707,26231,26753,27273,27789,28307,28820,29335,29848,30357,30865,31370,31874,32376,32877,33375,33874,34368,34862,35354,35845,36332,36818,37303,37786,38266,38742,39217,39688,40158,40626,41095,41563,42030,42493,42953,43414]},"kk":{"t":[0.041666666666666664,1.0416666666666667,2.0416666666666665,3.0416666666666665,4.041666666666667,5.041666666666667,6.041666666666667,7.041666666666667,8.041666666666666,9.041666666666666,10.041666666666666,11.041666666666666,12.041666666666666,13.041666666666666,14.041666666666666,15.041666666666666,16.041666666666668,17.041666666666668,18.041666666666668,19.041666666666668,20.041666666666668,21.041666666666668,22.041666666666668,23.041666666666668,24.041666666666668,25.041666666666668,26.041666666666668,27.041666666666668,28.041666666666668,29.041666666666668,30.041666666666668,31.041666666666668,32.041666666666664,33.041666666666664,34.041666666666664,35.041666666666664,36.041666666666664,37.041666666666664,38.041666666666664,39.041666666666664,40.041666666666664,41.041666666666664,42.041666666666664,43.041666666666664,44.041666666666664,45.041666666666664,46.041666666666664,47.041666666666664,48.041666666666664,49.041666666666664,50.041666666666664,51.041666666666664,52.041666666666664,53.041666666666664,54.041666666666664,55.041666666666664,56.041666666666664,57.041666666666664,58.041666666666664,59.041666666666664,60.041666666666664,61.041666666666664,62.041666666666664,63.041666666666664,64.04166666666667,65.04166666666667,66.04166666666667,67.04166666666667,68.04166666666667,69.04166666666667,70.04166666666667,71.04166666666667,72.04166666666667,73.04166666666667,74.04166666666667,75.04166666666667,76.04166666666667,77.04166666666667,78.04166666666667,79.04166666666667,80.04166666666667,81.04166666666667,82.04166666666667,83.04166666666667,84.04166666666667,85.04166666666667,86.04166666666667,87.04166666666667,88.04166666666667,89.04166666666667],"equity":[50000,36450,23915,19371,19371,12709,11438,6754,5471,4431,3988,2617,2617,2120,1908,1014,1014,812,312,112,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12],"meme":[1.0,1.653,2.404,2.673,3.136,3.618,4.026,4.301,4.706,5.083,5.185,5.342,5.338,5.264,5.282,5.46,4.996,5.012,5.181,5.678,5.394,5.048,5.241,5.119,5.234,5.101,5.212,5.028,4.759,4.356,4.223,4.097,4.093,4.027,4.086,4.23,4.397,4.312,4.313,4.223,4.547,4.67,4.527,4.947,4.801,4.767,4.647,4.608,4.879,4.682,4.665,4.65,4.537,4.554,4.381,4.259,4.393,4.372,4.007,4.36,4.338,4.226,4.044,3.92,4.156,4.099,4.065,4.054,3.699,3.833,3.921,3.968,3.967,3.628,3.693,3.623,3.781,3.616,3.42,3.522,3.613,3.558,3.41,3.574,3.429,3.6,3.89,4.001,4.132,3.851]}};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (x, d=0) => x.toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:d});
+const pct = x => (x>0?'+':'') + fmt(x*100) + '%';
+const P = Object.fromEntries(D.presets.map(p=>[p.name,p]));
+
+/* ---------- vault modes ---------- */
+const MODES = {
+  kk:{title:'Kamikaze', lede:'Fixed 10x, 100x or 1000x leverage on BTC/ETH. The vault lives on sharp shots.',
+    flow:[['win','Profit','USDC buys the meme on the pool and burns it'],['loss','Liquidation','PAPER minted and distributed to meme holders'],['cfg','Rules','fixed leverage, max 10% of the vault per trade']],
+    preset:'Kamikaze 100x'},
+  dn:{title:'Regenerative delta neutral', lede:'Long and short at once, with leverage set by volatility. One leg loses in a controlled way and mints PAPER, which gets staked.',
+    flow:[['loss','Losing leg','PAPER minted and staked'],['win','USDC yield','builds up until it covers 100% of the starting capital'],['cfg','Cycle','capital regenerated, next round. Optional: a share of yield goes to buybacks']],
+    preset:'Regenerative delta neutral'},
+  cu:{title:'Custom', lede:'The creator picks the asset, leverage, allocation, a stop before liquidation, direction (momentum, contrarian…) and how much profit goes to buybacks.',
+    flow:[['win','Profit','chosen share bought back and burned, the rest stays in the vault'],['loss','Stop / liq','PAPER to holders, configurable share'],['cfg','Example','ETH 50x, momentum, SL at 0.6× the liquidation distance']],
+    preset:'Custom ETH 50x momentum'},
+};
+function renderMode(k){
+  const m = MODES[k], p = P[m.preset];
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', t.dataset.m===k));
+  const panel = document.getElementById('mode-panel');
+  panel.setAttribute('aria-labelledby','t-'+k);
+  panel.innerHTML = `<div><h3 style="font-size:30px">${m.title}</h3><p style="margin-top:10px">${m.lede}</p>
+    <div class="flow">${m.flow.map(([c,a,b])=>`<div><span class="k ${c}">${a}</span><span>${b}</span></div>`).join('')}</div></div>
+    <div><p class="eyebrow" style="margin-bottom:10px">90-day simulation · ${m.preset}</p>
+    <div class="stats">
+      <div class="stat"><span class="v ${p.vault_med<0?'neg':'pos'}">${pct(p.vault_med)}</span><span class="l">vault, median</span></div>
+      <div class="stat"><span class="v pos">×${fmt(p.meme_med,2)}</span><span class="l">meme price, median</span></div>
+      <div class="stat"><span class="v">${fmt(p.burn*100,1)}%</span><span class="l">of the pool burned</span></div>
+      <div class="stat"><span class="v">${p.staked? fmt(p.staked/1e6,1)+'M' : '$'+fmt(p.paper_usd/1000,1)+'k'}</span><span class="l">${p.staked?'PAPER staked by the vault':'PAPER to holders (implied value)'}</span></div>
+    </div></div>`;
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>renderMode(t.dataset.m)));
+document.querySelector('.tabs').addEventListener('keydown',e=>{
+  const tabs=[...document.querySelectorAll('.tab')]; const i=tabs.indexOf(document.activeElement);
+  if(i<0) return; let j=e.key==='ArrowRight'?i+1:e.key==='ArrowLeft'?i-1:null;
+  if(j===null) return; j=(j+tabs.length)%tabs.length; tabs[j].focus(); renderMode(tabs[j].dataset.m);
+});
+renderMode('kk');
+
+/* ---------- table ---------- */
+document.getElementById('tbl').innerHTML = D.presets.map(p=>`<tr><td>${p.name}</td><td>${pct(p.vault_med)}</td><td>${fmt(p.dead*100)}%</td>
+  <td>×${fmt(p.meme_med,2)}</td><td>${fmt(p.burn*100,1)}%</td><td>$${fmt(p.paper_usd)}</td><td>${fmt(p.staked)}</td></tr>`).join('');
+
+/* ---------- charts (hand-drawn SVG) ---------- */
+const NS='http://www.w3.org/2000/svg';
+const el=(tag,attrs,parent)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent&&parent.appendChild(e);return e};
+function tip(card){let t=card.querySelector('.tip');if(!t){t=document.createElement('div');t.className='tip';t.hidden=true;card.appendChild(t)}return t}
+function place(t,card,evt,html){t.innerHTML=html;t.hidden=false;const r=card.getBoundingClientRect();
+  let x=evt.clientX-r.left+12,y=evt.clientY-r.top-10;if(x+t.offsetWidth>r.width)x-=t.offsetWidth+24;t.style.left=x+'px';t.style.top=y+'px'}
+
+function rangeChart(){
+  const s=document.getElementById('c-range'); s.innerHTML='';
+  const W=480,H=250,L=150,R=20,T=12,B=30, rows=D.presets, max=10;
+  const x=v=>L+(W-L-R)*Math.log(v)/Math.log(max); // log scale from 1x
+  [1,2,5,10].forEach(v=>{el('line',{x1:x(v),x2:x(v),y1:T,y2:H-B,class:'grid'},s);el('text',{x:x(v),y:H-10,'text-anchor':'middle'},s).textContent='×'+v});
+  const bh=(H-T-B)/rows.length, card=s.parentElement, t=tip(card);
+  rows.forEach((p,i)=>{
+    const cy=T+bh*i+bh/2, lo=Math.max(p.meme_p10,0.5), col=p.name.startsWith('Regen')?css('--s3'):p.name.startsWith('Custom')?css('--s2'):css('--s1');
+    el('text',{x:L-10,y:cy+4,'text-anchor':'end'},s).textContent=p.name;
+    const x0=p.meme_p10<1?L:x(lo);
+    el('rect',{x:x0,y:cy-4,width:Math.max(x(p.meme_p90)-x0,2),height:8,rx:4,fill:col,opacity:.35},s);
+    el('circle',{cx:p.meme_med<1?L:x(p.meme_med),cy,r:6,fill:col,stroke:css('--surface'),'stroke-width':2},s);
+    const hit=el('rect',{x:L,y:cy-bh/2,width:W-L-R,height:bh,fill:'transparent'},s);
+    hit.addEventListener('mousemove',e=>place(t,card,e,`<b>${p.name}</b><br>p10 ×${fmt(p.meme_p10,2)} · median ×${fmt(p.meme_med,2)} · p90 ×${fmt(p.meme_p90,2)}`));
+    hit.addEventListener('mouseleave',()=>t.hidden=true);
+  });
+}
+function dnChart(){
+  const s=document.getElementById('c-dn'); s.innerHTML='';
+  const W=480,H=250,L=52,R=16,T=12,B=30, d=D.dn, n=d.t.length, max=50000;
+  const x=i=>L+(W-L-R)*d.t[i]/d.t[n-1], y=v=>T+(H-T-B)*(1-v/max);
+  [0,10000,20000,30000,40000,50000].forEach(v=>{el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),class:'grid'},s);el('text',{x:L-8,y:y(v)+4,'text-anchor':'end'},s).textContent='$'+v/1000+'k'});
+  [0,30,60,90].forEach(v=>el('text',{x:L+(W-L-R)*v/d.t[n-1],y:H-10,'text-anchor':'middle'},s).textContent='d'+v);
+  const line=(arr,col)=>el('path',{d:arr.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(''),fill:'none',stroke:col,'stroke-width':2,'stroke-linejoin':'round'},s);
+  line(d.equity,css('--s1')); line(d.yield,css('--s3'));
+  el('line',{x1:L,x2:W-R,y1:y(50000),y2:y(50000),stroke:css('--muted'),'stroke-dasharray':'4 4'},s);
+  el('text',{x:W-R,y:y(50000)+14,'text-anchor':'end'},s).textContent='100% of capital = regeneration';
+  const card=s.parentElement,t=tip(card),cross=el('line',{y1:T,y2:H-B,stroke:css('--muted'),opacity:0},s);
+  const hit=el('rect',{x:L,y:T,width:W-L-R,height:H-T-B,fill:'transparent'},s);
+  hit.addEventListener('mousemove',e=>{const r=s.getBoundingClientRect(),px=(e.clientX-r.left)*W/r.width;
+    const i=Math.max(0,Math.min(n-1,Math.round((px-L)/(W-L-R)*(n-1))));cross.setAttribute('x1',x(i));cross.setAttribute('x2',x(i));cross.setAttribute('opacity',.6);
+    place(t,card,e,`day ${fmt(d.t[i])}<br>equity $${fmt(d.equity[i])}<br>cycle yield $${fmt(d.yield[i])}`)});
+  hit.addEventListener('mouseleave',()=>{t.hidden=true;cross.setAttribute('opacity',0)});
+}
+function drawCharts(){rangeChart();dnChart()}
+drawCharts();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawCharts);
+new MutationObserver(drawCharts).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+/* ---------- receipt ---------- */
+function receipt(){
+  const loss=Math.max(0,+document.getElementById('loss').value||0), paper=loss*100;
+  const tix=Math.min(500,Math.floor(Math.sqrt(paper/10000)));
+  document.getElementById('r-paper').textContent=fmt(paper);
+  document.getElementById('r-tix').textContent=fmt(tix);
+  document.getElementById('r-buy').textContent=tix?('$'+fmt(tix*25)):'not eligible';
+}
+document.getElementById('loss').addEventListener('input',receipt); receipt();
+
+/* ---------- waitlist (db) ---------- */
+const form=document.getElementById('wl'), st=document.getElementById('wl-status'), cnt=document.getElementById('wl-count');
+let db=null, me=null;
+(async()=>{
+  try{
+    db = await window.claude?.use?.('db');
+    const user = await window.claude?.use?.('user');
+    me = user ? await user.id() : null;
+    if(!db || !me){st.textContent='The waitlist opens at public launch. Meanwhile, try the calculator.';return}
+    const mine = await db.doc('waitlist/'+me).get().catch(()=>null);
+    const data = mine && mine.exists ? mine.data() : null;
+    if(data && data.wallet){document.getElementById('wallet').value=data.wallet;document.getElementById('handle').value=data.handle||'';st.className='status ok';st.textContent='You are already on the list. You can update your wallet.'}
+    db.collection('waitlist').onSnapshot(s=>{cnt.textContent=fmt(s.size);document.getElementById('wl-count-box').hidden=false},()=>{});
+  }catch(e){st.textContent='The waitlist opens at public launch.'}
+})();
+form.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const w=document.getElementById('wallet').value.trim(), h=document.getElementById('handle').value.trim();
+  if(!/^0x[0-9a-fA-F]{40}$/.test(w)){st.className='status err';st.textContent='The wallet must be a 0x address with 40 hexadecimal characters.';return}
+  if(!db||!me){st.className='status err';st.textContent='Registration is not available in this view. Try again from the public page at launch.';return}
+  const b=document.getElementById('wl-btn'); b.disabled=true;
+  try{await db.doc('waitlist/'+me).set({wallet:w.toLowerCase(),handle:h.slice(0,32),at:new Date().toISOString()});
+    st.className='status ok';st.textContent='Wallet registered for the Season 0 snapshot.'}
+  catch(err){st.className='status err';st.textContent='You cannot write to this page. Ask for Contributor access.'}
+  finally{b.disabled=false}
+});
+</script>
