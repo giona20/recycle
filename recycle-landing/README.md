@@ -1,4 +1,4 @@
-# RECYCLE demo site (Streamlit Community Cloud)
+# RECYCLE demo site
 
 Three pages, all demo (nothing on-chain):
 
