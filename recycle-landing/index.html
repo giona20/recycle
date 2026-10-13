@@ -166,7 +166,7 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-size:13px;color:va
       <text class="lbl" x="22" y="96">VAULT</text>
       <text x="22" y="114">trades again</text>
       <text x="220" y="214" text-anchor="middle" class="lbl" style="font-size:34px">♻</text>
-      <text x="220" y="240" text-anchor="middle">100 PAPER per $1 lost</text>
+      <text id="hero-rate" x="220" y="240" text-anchor="middle">100 PAPER per $1 lost</text>
     </svg>
   </section>
 
@@ -247,7 +247,8 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-size:13px;color:va
         <div class="head">PAPERTRADE · LOSS RECEIPT</div>
         <div class="dash-line"></div>
         <label for="loss">Realized loss ($) <input id="loss" type="number" min="0" step="10" value="2500" inputmode="decimal"></label>
-        <div class="row"><span>Mint rate</span><span>100 PAPER / $</span></div>
+        <div class="row"><span>Mint rate <span id="r-src" style="color:var(--muted)"></span></span><span id="r-rate">100 PAPER / $</span></div>
+        <div class="row"><span>Loser fee (not minted)</span><span>2%</span></div>
         <div class="row"><span>PAPER minted</span><span id="r-paper" class="red">—</span></div>
         <div class="dash-line"></div>
         <div class="row"><span>Tickets (√ PAPER / 10k)</span><span id="r-tix">—</span></div>
@@ -373,8 +374,25 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawCharts)
 new MutationObserver(drawCharts).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 
 /* ---------- receipt ---------- */
+/* Mint rate: live value injected by the host page (window.RECYCLE_LIVE), else the protocol's flat rate.
+   Papertrade mints on the loss net of the 2% losing fee: PAPER = loss x 0.98 x rate. */
+const LIVE = window.RECYCLE_LIVE || null;
+const MINT_RATE = LIVE && LIVE.rate > 0 ? LIVE.rate : 100;
+const LOSER_FEE = 0.02;
+(function(){
+  const r = fmt(MINT_RATE, MINT_RATE < 100 ? 1 : 0);
+  document.getElementById('r-rate').textContent = r + ' PAPER / $';
+  document.getElementById('hero-rate').textContent = r + ' PAPER per $1 lost';
+  const src = document.getElementById('r-src');
+  if (LIVE && LIVE.rate > 0) {
+    const t = new Date(LIVE.ts * 1000);
+    src.textContent = '(live ' + t.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', timeZone:'Europe/Rome'}) + ' CET)';
+  } else {
+    src.textContent = '(flat rate, LP under $2M)';
+  }
+})();
 function receipt(){
-  const loss=Math.max(0,+document.getElementById('loss').value||0), paper=loss*100;
+  const loss=Math.max(0,+document.getElementById('loss').value||0), paper=loss*(1-LOSER_FEE)*MINT_RATE;
   const tix=Math.min(500,Math.floor(Math.sqrt(paper/10000)));
   document.getElementById('r-paper').textContent=fmt(paper);
   document.getElementById('r-tix').textContent=fmt(tix);
@@ -382,30 +400,36 @@ function receipt(){
 }
 document.getElementById('loss').addEventListener('input',receipt); receipt();
 
-/* ---------- waitlist (db) ---------- */
+/* ---------- waitlist ----------
+   Two stores: claude.ai's database when the page runs as a Claude artifact, or a Google Apps Script
+   endpoint (window.RECYCLE_WAITLIST_URL, injected by the Streamlit host) that appends a row to a Sheet. */
 const form=document.getElementById('wl'), st=document.getElementById('wl-status'), cnt=document.getElementById('wl-count');
+const SHEET_URL = window.RECYCLE_WAITLIST_URL || '';
 let db=null, me=null;
 (async()=>{
   try{
     db = await window.claude?.use?.('db');
     const user = await window.claude?.use?.('user');
     me = user ? await user.id() : null;
-    if(!db || !me){st.textContent='The waitlist opens at public launch. Meanwhile, try the calculator.';return}
+    if(!db || !me){ if(!SHEET_URL) st.textContent='The waitlist opens at public launch. Meanwhile, try the calculator.'; return }
     const mine = await db.doc('waitlist/'+me).get().catch(()=>null);
     const data = mine && mine.exists ? mine.data() : null;
     if(data && data.wallet){document.getElementById('wallet').value=data.wallet;document.getElementById('handle').value=data.handle||'';st.className='status ok';st.textContent='You are already on the list. You can update your wallet.'}
     db.collection('waitlist').onSnapshot(s=>{cnt.textContent=fmt(s.size);document.getElementById('wl-count-box').hidden=false},()=>{});
-  }catch(e){st.textContent='The waitlist opens at public launch.'}
+  }catch(e){ if(!SHEET_URL) st.textContent='The waitlist opens at public launch.' }
 })();
 form.addEventListener('submit',async e=>{
   e.preventDefault();
-  const w=document.getElementById('wallet').value.trim(), h=document.getElementById('handle').value.trim();
+  const w=document.getElementById('wallet').value.trim(), h=document.getElementById('handle').value.trim().replace(/^@?/, '@');
   if(!/^0x[0-9a-fA-F]{40}$/.test(w)){st.className='status err';st.textContent='The wallet must be a 0x address with 40 hexadecimal characters.';return}
-  if(!db||!me){st.className='status err';st.textContent='Registration is not available in this view. Try again from the public page at launch.';return}
+  const row={wallet:w.toLowerCase(),handle:h==='@'?'':h.slice(0,32),at:new Date().toISOString()};
   const b=document.getElementById('wl-btn'); b.disabled=true;
-  try{await db.doc('waitlist/'+me).set({wallet:w.toLowerCase(),handle:h.slice(0,32),at:new Date().toISOString()});
-    st.className='status ok';st.textContent='Wallet registered for the Season 0 snapshot.'}
-  catch(err){st.className='status err';st.textContent='You cannot write to this page. Ask for Contributor access.'}
+  try{
+    if(db && me){ await db.doc('waitlist/'+me).set(row) }
+    else if(SHEET_URL){ await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(row)}) }
+    else { st.className='status err'; st.textContent='Registration opens at public launch.'; return }
+    st.className='status ok';st.textContent='Wallet registered for the Season 0 snapshot.';
+  }catch(err){st.className='status err';st.textContent='Registration failed. Check your connection and try again.'}
   finally{b.disabled=false}
 });
 </script>
