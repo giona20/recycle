@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 /* Layout: a recycling loop. Hero = the loop itself; then the three phases as a real sequence,
-   the vault modes as a switchable panel, a simulation dashboard, and a liquidation-receipt waitlist. */
+   the vault modes as a switchable panel, and a liquidation-receipt waitlist. */
 :root{
   --bg:#eef2ef; --surface:#f8faf8; --ink:#141a17; --muted:#56615b; --rule:#cfd8d2;
   --accent:#16834a; --accent-ink:#ffffff; --loss:#c8372d; --paper:#e7ebe6;
@@ -84,6 +84,8 @@ nav{display:flex;justify-content:space-between;align-items:center;padding-block:
 .stat .v{font:800 30px/1 var(--display);font-variant-numeric:tabular-nums}
 .stat .l{font-size:12.5px;color:var(--muted)}
 .stat .v.neg{color:var(--loss)} .stat .v.pos{color:var(--accent)}
+.sets{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.sets li{padding:12px 0;border-bottom:1px solid var(--rule);font-size:15px}
 
 /* dashboard */
 .dash{display:grid;grid-template-columns:1fr 1fr;gap:20px}
@@ -196,7 +198,7 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-size:13px;color:va
         <span class="n">3</span>
         <h3>Vault</h3>
         <p>At graduation half the raise goes to DEX liquidity and half to a vault that trades BTC or ETH under rules the creator picks at launch. Profits buy back and burn the meme. Losses mint PAPER for holders or for staking.</p>
-        <span class="tag">immutable rules · on-chain keeper</span>
+        <span class="tag">rules fixed at launch · session-key keeper</span>
       </article>
     </div>
   </section>
@@ -205,7 +207,7 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-size:13px;color:va
     <div class="sec-head">
       <p class="eyebrow">Phase 3 · the creator chooses</p>
       <h2 id="modes-h">Three vaults, one choice at launch</h2>
-      <p style="color:var(--muted)">The creator picks the mode when creating the meme, and the contract locks it forever. The keeper decides when to enter; the contract enforces leverage, allocation and where the money goes.</p>
+      <p style="color:var(--muted)">The creator picks the mode when creating the meme and it cannot change afterwards. The keeper trades through Papertrade's signed intents with a session key: it can open and close positions, but it can never withdraw the vault's funds.</p>
     </div>
     <div class="tabs" role="tablist" aria-label="Vault modes">
       <button class="tab" role="tab" id="t-kk" aria-selected="true" aria-controls="mode-panel" data-m="kk">Kamikaze</button>
@@ -213,34 +215,6 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-size:13px;color:va
       <button class="tab" role="tab" id="t-cu" aria-selected="false" aria-controls="mode-panel" data-m="cu">Custom</button>
     </div>
     <div class="mode" id="mode-panel" role="tabpanel"></div>
-  </section>
-
-  <section aria-labelledby="dash-h">
-    <div class="sec-head">
-      <p class="eyebrow">Dashboard preview · simulated data</p>
-      <h2 id="dash-h">What happens in 90 days</h2>
-      <p style="color:var(--muted)">Monte Carlo simulation: $50k vault, $50k pool, 80 fat-tailed BTC/ETH paths, real Papertrade rules (100 PAPER minted per $1, haircut on wins, 2% fee, $10k minimum notional). At launch this section will show live data.</p>
-    </div>
-    <div class="dash">
-      <div class="card">
-        <h3>Meme price</h3>
-        <p class="sub">Multiple of the launch price after 90 days. Bar = 10th–90th percentile, dot = median.</p>
-        <svg class="chart" id="c-range" viewBox="0 0 480 250" role="img" aria-label="Meme price multiple range by preset"></svg>
-      </div>
-      <div class="card">
-        <h3>Regenerative vault</h3>
-        <p class="sub">One delta-neutral path: capital turns into staked PAPER, and the cycle yield climbs toward 100% of the starting capital.</p>
-        <svg class="chart" id="c-dn" viewBox="0 0 480 250" role="img" aria-label="Vault equity and cumulative cycle yield"></svg>
-        <div class="legend"><span><i style="background:var(--s1)"></i>Vault equity</span><span><i style="background:var(--s3)"></i>Cycle staking yield</span></div>
-      </div>
-      <div class="tablewrap">
-        <table>
-          <thead><tr><th>Preset</th><th>Vault (median)</th><th>Vault wiped out</th><th>Meme ×</th><th>Pool burned</th><th>PAPER to holders*</th><th>PAPER staked</th></tr></thead>
-          <tbody id="tbl"></tbody>
-        </table>
-      </div>
-      <p class="note">* implied value of the PAPER distributed, based on today's staking cash flows (an assumption). Directional vaults almost always lose their capital, by design: it turns into burned meme and PAPER for holders. This is not a promise of returns.</p>
-    </div>
   </section>
 
   <section id="join" class="join" aria-labelledby="join-h">
@@ -298,38 +272,31 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-size:13px;color:va
     });
   });
 })();
-const D = {"presets":[{"name":"Kamikaze 10x","vault_med":-0.578,"dead":0.0,"meme_med":2.55,"meme_p10":1.18,"meme_p90":4.82,"paper_usd":17585,"staked":0,"cycles":0.0,"burn":0.264},{"name":"Kamikaze 100x","vault_med":-1.0,"dead":1.0,"meme_med":3.83,"meme_p10":1.9,"meme_p90":7.75,"paper_usd":30409,"staked":0,"cycles":0.0,"burn":0.327},{"name":"Kamikaze 1000x","vault_med":-0.999,"dead":1.0,"meme_med":5.03,"meme_p10":3.12,"meme_p90":9.32,"paper_usd":30387,"staked":0,"cycles":0.0,"burn":0.36},{"name":"Regenerative delta neutral","vault_med":-0.899,"dead":0.0,"meme_med":1.03,"meme_p10":0.61,"meme_p90":1.7,"paper_usd":0,"staked":65249464,"cycles":0.0,"burn":0.0},{"name":"Custom ETH 50x momentum","vault_med":-0.997,"dead":1.0,"meme_med":3.12,"meme_p10":1.66,"meme_p90":5.35,"paper_usd":51864,"staked":0,"cycles":0.0,"burn":0.297}],"dn":{"t":[0.041666666666666664,1.0416666666666667,2.0416666666666665,3.0416666666666665,4.041666666666667,5.041666666666667,6.041666666666667,7.041666666666667,8.041666666666666,9.041666666666666,10.041666666666666,11.041666666666666,12.041666666666666,13.041666666666666,14.041666666666666,15.041666666666666,16.041666666666668,17.041666666666668,18.041666666666668,19.041666666666668,20.041666666666668,21.041666666666668,22.041666666666668,23.041666666666668,24.041666666666668,25.041666666666668,26.041666666666668,27.041666666666668,28.041666666666668,29.041666666666668,30.041666666666668,31.041666666666668,32.041666666666664,33.041666666666664,34.041666666666664,35.041666666666664,36.041666666666664,37.041666666666664,38.041666666666664,39.041666666666664,40.041666666666664,41.041666666666664,42.041666666666664,43.041666666666664,44.041666666666664,45.041666666666664,46.041666666666664,47.041666666666664,48.041666666666664,49.041666666666664,50.041666666666664,51.041666666666664,52.041666666666664,53.041666666666664,54.041666666666664,55.041666666666664,56.041666666666664,57.041666666666664,58.041666666666664,59.041666666666664,60.041666666666664,61.041666666666664,62.041666666666664,63.041666666666664,64.04166666666667,65.04166666666667,66.04166666666667,67.04166666666667,68.04166666666667,69.04166666666667,70.04166666666667,71.04166666666667,72.04166666666667,73.04166666666667,74.04166666666667,75.04166666666667,76.04166666666667,77.04166666666667,78.04166666666667,79.04166666666667,80.04166666666667,81.04166666666667,82.04166666666667,83.04166666666667,84.04166666666667,85.04166666666667,86.04166666666667,87.04166666666667,88.04166666666667,89.04166666666667],"equity":[50000,47070,40651,36645,31992,28345,26297,22140,20617,17728,16583,15083,13368,12848,11996,10874,9956,9773,8765,7488,7125,6823,6760,6580,6423,6414,5990,5746,5680,5857,5570,5538,5783,5731,5512,6053,6202,6093,6022,5952,5784,5446,5982,6011,5629,5591,5460,5782,5745,5597,5520,6045,5669,5600,5435,5669,5515,6030,5434,5947,5438,5440,5754,5743,5830,5736,5646,5636,5611,5485,5674,5665,5526,5477,5659,5550,5470,5293,5461,5937,5836,6689,6602,6593,6104,5883,5465,5928,5972,5457],"yield":[0,78,235,438,690,991,1316,1689,2079,2502,2937,3389,3860,4337,4823,5320,5828,6337,6855,7386,7922,8460,9000,9539,10083,10627,11174,11723,12272,12819,13368,13917,14463,15008,15555,16097,16636,17176,17715,18254,18794,19335,19871,20405,20941,21477,22012,22543,23073,23604,24133,24658,25183,25707,26231,26753,27273,27789,28307,28820,29335,29848,30357,30865,31370,31874,32376,32877,33375,33874,34368,34862,35354,35845,36332,36818,37303,37786,38266,38742,39217,39688,40158,40626,41095,41563,42030,42493,42953,43414]},"kk":{"t":[0.041666666666666664,1.0416666666666667,2.0416666666666665,3.0416666666666665,4.041666666666667,5.041666666666667,6.041666666666667,7.041666666666667,8.041666666666666,9.041666666666666,10.041666666666666,11.041666666666666,12.041666666666666,13.041666666666666,14.041666666666666,15.041666666666666,16.041666666666668,17.041666666666668,18.041666666666668,19.041666666666668,20.041666666666668,21.041666666666668,22.041666666666668,23.041666666666668,24.041666666666668,25.041666666666668,26.041666666666668,27.041666666666668,28.041666666666668,29.041666666666668,30.041666666666668,31.041666666666668,32.041666666666664,33.041666666666664,34.041666666666664,35.041666666666664,36.041666666666664,37.041666666666664,38.041666666666664,39.041666666666664,40.041666666666664,41.041666666666664,42.041666666666664,43.041666666666664,44.041666666666664,45.041666666666664,46.041666666666664,47.041666666666664,48.041666666666664,49.041666666666664,50.041666666666664,51.041666666666664,52.041666666666664,53.041666666666664,54.041666666666664,55.041666666666664,56.041666666666664,57.041666666666664,58.041666666666664,59.041666666666664,60.041666666666664,61.041666666666664,62.041666666666664,63.041666666666664,64.04166666666667,65.04166666666667,66.04166666666667,67.04166666666667,68.04166666666667,69.04166666666667,70.04166666666667,71.04166666666667,72.04166666666667,73.04166666666667,74.04166666666667,75.04166666666667,76.04166666666667,77.04166666666667,78.04166666666667,79.04166666666667,80.04166666666667,81.04166666666667,82.04166666666667,83.04166666666667,84.04166666666667,85.04166666666667,86.04166666666667,87.04166666666667,88.04166666666667,89.04166666666667],"equity":[50000,36450,23915,19371,19371,12709,11438,6754,5471,4431,3988,2617,2617,2120,1908,1014,1014,812,312,112,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12],"meme":[1.0,1.653,2.404,2.673,3.136,3.618,4.026,4.301,4.706,5.083,5.185,5.342,5.338,5.264,5.282,5.46,4.996,5.012,5.181,5.678,5.394,5.048,5.241,5.119,5.234,5.101,5.212,5.028,4.759,4.356,4.223,4.097,4.093,4.027,4.086,4.23,4.397,4.312,4.313,4.223,4.547,4.67,4.527,4.947,4.801,4.767,4.647,4.608,4.879,4.682,4.665,4.65,4.537,4.554,4.381,4.259,4.393,4.372,4.007,4.36,4.338,4.226,4.044,3.92,4.156,4.099,4.065,4.054,3.699,3.833,3.921,3.968,3.967,3.628,3.693,3.623,3.781,3.616,3.42,3.522,3.613,3.558,3.41,3.574,3.429,3.6,3.89,4.001,4.132,3.851]}};
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const fmt = (x, d=0) => x.toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:d});
 const pct = x => (x>0?'+':'') + fmt(x*100) + '%';
-const P = Object.fromEntries(D.presets.map(p=>[p.name,p]));
 
 /* ---------- vault modes ---------- */
 const MODES = {
   kk:{title:'Kamikaze', lede:'Fixed 10x, 100x or 1000x leverage on BTC/ETH. The vault lives on sharp shots.',
-    flow:[['win','Profit','USDC buys the meme on the pool and burns it'],['loss','Liquidation','PAPER minted and distributed to meme holders'],['cfg','Rules','fixed leverage, max 10% of the vault per trade']],
-    preset:'Kamikaze 100x'},
+    flow:[['win','Profit','USDC buys the meme on the pool and burns it'],['loss','Liquidation','PAPER minted and distributed to meme holders'],['cfg','Rules','fixed leverage and margin per trade, set at launch']],
+    sets:['Market: BTC or ETH','Leverage: 10x, 100x or 1000x','Margin per trade, as a share of the vault','Share of profits bought back and burned']},
   dn:{title:'Regenerative delta neutral', lede:'Long and short at once, with leverage set by volatility. One leg loses in a controlled way and mints PAPER, which gets staked.',
-    flow:[['loss','Losing leg','PAPER minted and staked'],['win','USDC yield','builds up until it covers 100% of the starting capital'],['cfg','Cycle','capital regenerated, next round. Optional: a share of yield goes to buybacks']],
-    preset:'Regenerative delta neutral'},
+    flow:[['loss','Losing leg','PAPER minted and staked'],['win','USDC yield','builds up until it covers the starting capital'],['cfg','Cycle','capital regenerated, next round. Optional: a share of yield goes to buybacks']],
+    sets:['Market: BTC or ETH','Leverage range, adjusted to volatility','When to close the pair','Share of staking yield used for buybacks']},
   cu:{title:'Custom', lede:'The creator picks the asset, leverage, allocation, a stop before liquidation, direction (momentum, contrarian…) and how much profit goes to buybacks.',
-    flow:[['win','Profit','chosen share bought back and burned, the rest stays in the vault'],['loss','Stop / liq','PAPER to holders, configurable share'],['cfg','Example','ETH 50x, momentum, SL at 0.6× the liquidation distance']],
-    preset:'Custom ETH 50x momentum'},
+    flow:[['win','Profit','chosen share bought back and burned, the rest stays in the vault'],['loss','Stop / liq','PAPER to holders, configurable share'],['cfg','Example','ETH, momentum, stop placed before liquidation']],
+    sets:['Market, leverage and margin per trade','Take profit and stop, before liquidation','Direction: momentum, contrarian, long, short or random','Profit to buybacks and PAPER to holders']},
 };
 function renderMode(k){
-  const m = MODES[k], p = P[m.preset];
+  const m = MODES[k];
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', t.dataset.m===k));
   const panel = document.getElementById('mode-panel');
   panel.setAttribute('aria-labelledby','t-'+k);
   panel.innerHTML = `<div><h3 style="font-size:30px">${m.title}</h3><p style="margin-top:10px">${m.lede}</p>
     <div class="flow">${m.flow.map(([c,a,b])=>`<div><span class="k ${c}">${a}</span><span>${b}</span></div>`).join('')}</div></div>
-    <div><p class="eyebrow" style="margin-bottom:10px">90-day simulation · ${m.preset}</p>
-    <div class="stats">
-      <div class="stat"><span class="v ${p.vault_med<0?'neg':'pos'}">${pct(p.vault_med)}</span><span class="l">vault, median</span></div>
-      <div class="stat"><span class="v pos">×${fmt(p.meme_med,2)}</span><span class="l">meme price, median</span></div>
-      <div class="stat"><span class="v">${fmt(p.burn*100,1)}%</span><span class="l">of the pool burned</span></div>
-      <div class="stat"><span class="v">${p.staked? fmt(p.staked/1e6,1)+'M' : '$'+fmt(p.paper_usd/1000,1)+'k'}</span><span class="l">${p.staked?'PAPER staked by the vault':'PAPER to holders (implied value)'}</span></div>
-    </div></div>`;
+    <div><p class="eyebrow" style="margin-bottom:10px">What the creator sets</p>
+    <ul class="sets">${m.sets.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>renderMode(t.dataset.m)));
 document.querySelector('.tabs').addEventListener('keydown',e=>{
@@ -338,56 +305,6 @@ document.querySelector('.tabs').addEventListener('keydown',e=>{
   if(j===null) return; j=(j+tabs.length)%tabs.length; tabs[j].focus(); renderMode(tabs[j].dataset.m);
 });
 renderMode('kk');
-
-/* ---------- table ---------- */
-document.getElementById('tbl').innerHTML = D.presets.map(p=>`<tr><td>${p.name}</td><td>${pct(p.vault_med)}</td><td>${fmt(p.dead*100)}%</td>
-  <td>×${fmt(p.meme_med,2)}</td><td>${fmt(p.burn*100,1)}%</td><td>$${fmt(p.paper_usd)}</td><td>${fmt(p.staked)}</td></tr>`).join('');
-
-/* ---------- charts (hand-drawn SVG) ---------- */
-const NS='http://www.w3.org/2000/svg';
-const el=(tag,attrs,parent)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent&&parent.appendChild(e);return e};
-function tip(card){let t=card.querySelector('.tip');if(!t){t=document.createElement('div');t.className='tip';t.hidden=true;card.appendChild(t)}return t}
-function place(t,card,evt,html){t.innerHTML=html;t.hidden=false;const r=card.getBoundingClientRect();
-  let x=evt.clientX-r.left+12,y=evt.clientY-r.top-10;if(x+t.offsetWidth>r.width)x-=t.offsetWidth+24;t.style.left=x+'px';t.style.top=y+'px'}
-
-function rangeChart(){
-  const s=document.getElementById('c-range'); s.innerHTML='';
-  const W=480,H=250,L=150,R=20,T=12,B=30, rows=D.presets, max=10;
-  const x=v=>L+(W-L-R)*Math.log(v)/Math.log(max); // log scale from 1x
-  [1,2,5,10].forEach(v=>{el('line',{x1:x(v),x2:x(v),y1:T,y2:H-B,class:'grid'},s);el('text',{x:x(v),y:H-10,'text-anchor':'middle'},s).textContent='×'+v});
-  const bh=(H-T-B)/rows.length, card=s.parentElement, t=tip(card);
-  rows.forEach((p,i)=>{
-    const cy=T+bh*i+bh/2, lo=Math.max(p.meme_p10,0.5), col=p.name.startsWith('Regen')?css('--s3'):p.name.startsWith('Custom')?css('--s2'):css('--s1');
-    el('text',{x:L-10,y:cy+4,'text-anchor':'end'},s).textContent=p.name;
-    const x0=p.meme_p10<1?L:x(lo);
-    el('rect',{x:x0,y:cy-4,width:Math.max(x(p.meme_p90)-x0,2),height:8,rx:4,fill:col,opacity:.35},s);
-    el('circle',{cx:p.meme_med<1?L:x(p.meme_med),cy,r:6,fill:col,stroke:css('--surface'),'stroke-width':2},s);
-    const hit=el('rect',{x:L,y:cy-bh/2,width:W-L-R,height:bh,fill:'transparent'},s);
-    hit.addEventListener('mousemove',e=>place(t,card,e,`<b>${p.name}</b><br>p10 ×${fmt(p.meme_p10,2)} · median ×${fmt(p.meme_med,2)} · p90 ×${fmt(p.meme_p90,2)}`));
-    hit.addEventListener('mouseleave',()=>t.hidden=true);
-  });
-}
-function dnChart(){
-  const s=document.getElementById('c-dn'); s.innerHTML='';
-  const W=480,H=250,L=52,R=16,T=12,B=30, d=D.dn, n=d.t.length, max=50000;
-  const x=i=>L+(W-L-R)*d.t[i]/d.t[n-1], y=v=>T+(H-T-B)*(1-v/max);
-  [0,10000,20000,30000,40000,50000].forEach(v=>{el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),class:'grid'},s);el('text',{x:L-8,y:y(v)+4,'text-anchor':'end'},s).textContent='$'+v/1000+'k'});
-  [0,30,60,90].forEach(v=>el('text',{x:L+(W-L-R)*v/d.t[n-1],y:H-10,'text-anchor':'middle'},s).textContent='d'+v);
-  const line=(arr,col)=>el('path',{d:arr.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(''),fill:'none',stroke:col,'stroke-width':2,'stroke-linejoin':'round'},s);
-  line(d.equity,css('--s1')); line(d.yield,css('--s3'));
-  el('line',{x1:L,x2:W-R,y1:y(50000),y2:y(50000),stroke:css('--muted'),'stroke-dasharray':'4 4'},s);
-  el('text',{x:W-R,y:y(50000)+14,'text-anchor':'end'},s).textContent='100% of capital = regeneration';
-  const card=s.parentElement,t=tip(card),cross=el('line',{y1:T,y2:H-B,stroke:css('--muted'),opacity:0},s);
-  const hit=el('rect',{x:L,y:T,width:W-L-R,height:H-T-B,fill:'transparent'},s);
-  hit.addEventListener('mousemove',e=>{const r=s.getBoundingClientRect(),px=(e.clientX-r.left)*W/r.width;
-    const i=Math.max(0,Math.min(n-1,Math.round((px-L)/(W-L-R)*(n-1))));cross.setAttribute('x1',x(i));cross.setAttribute('x2',x(i));cross.setAttribute('opacity',.6);
-    place(t,card,e,`day ${fmt(d.t[i])}<br>equity $${fmt(d.equity[i])}<br>cycle yield $${fmt(d.yield[i])}`)});
-  hit.addEventListener('mouseleave',()=>{t.hidden=true;cross.setAttribute('opacity',0)});
-}
-function drawCharts(){rangeChart();dnChart()}
-drawCharts();
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawCharts);
-new MutationObserver(drawCharts).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 
 /* ---------- receipt ---------- */
 /* Mint rate: live value injected by the host page (window.RECYCLE_LIVE), else the protocol's flat rate.

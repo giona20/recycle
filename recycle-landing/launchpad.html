@@ -96,6 +96,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none}
 footer{max-width:1120px;margin:40px auto 0;border-top:1px solid var(--rule);padding-top:16px;font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 @media (max-width:820px){.stats{grid-template-columns:1fr 1fr}}
 
+.sets{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.sets li{padding:10px 0;border-bottom:1px solid var(--rule);font-size:14px;line-height:1.45}
+
 /* Layout: an exchange board. List view = filters + launch cards; detail view = curve on the left,
    the action that fits the launch's phase on the right. */
 .head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding-top:12px}
@@ -247,8 +250,7 @@ function seed() {
      blurb: 'Raids the trash of liquidated longs. Graduated in 9 hours.',
      pay: 'PROOF_OF_LOSS', p0: 0.00001, p1: 0.00024, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
      lmEnd: now - 120 * HOUR, curveEnd: now - 96 * HOUR, sold: CURVE_SUPPLY, buyers: 1203, graduated: true,
-     vault: v({mode: 'KAMIKAZE', leverage: 1000, alloc: 0.02}),
-     live: {equity: 31840, priceMult: 3.4, burnedPct: 0.19, paperHolders: 2.38e6, trades: 61, wins: 27, liqs: 33}},
+     vault: v({mode: 'KAMIKAZE', leverage: 1000, alloc: 0.02})},
     {id: 'phc', name: 'Paper Hands Club', symbol: 'PHC', hue: 280, creator: '0x9d71…03be',
      blurb: 'Members sell at the bottom so you do not have to. Momentum vault on ETH.',
      pay: 'PROOF_OF_LOSS', p0: 0.00001, p1: 0.00024, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
@@ -258,8 +260,7 @@ function seed() {
      blurb: 'Lives between the long and the short. Stakes every PAPER it mints.',
      pay: 'PROOF_OF_LOSS', p0: 0.00001, p1: 0.00024, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
      lmEnd: now - 300 * HOUR, curveEnd: now - 260 * HOUR, sold: CURVE_SUPPLY, buyers: 1630, graduated: true,
-     vault: v({mode: 'DELTA_NEUTRAL', yieldToBuyback: 0.2}),
-     live: {equity: 21400, priceMult: 1.08, burnedPct: 0.004, paperStaked: 61.6e6, trades: 214, wins: 214, liqs: 2, cycles: 0}},
+     vault: v({mode: 'DELTA_NEUTRAL', yieldToBuyback: 0.2})},
     {id: 'bust', name: 'Bust Price', symbol: 'BUST', hue: 30, creator: '0x70aa…5e3d',
      blurb: 'Did not make it to graduation. Buyers can take their share of the raise back.',
      pay: 'PROOF_OF_LOSS', p0: 0.00002, p1: 0.0005, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
@@ -353,8 +354,8 @@ function card(l) {
   if (ph === 'lm') line = `<div class="row"><span>${fmt(l.miners || 0)} wallets mining</span><span class="num">opens in ${countdown(l.lmEnd - now)}</span></div>`;
   else if (ph === 'bc') line = `<div class="bar"><i style="width:${Math.min(100, pct * 100).toFixed(1)}%"></i></div>
      <div class="row"><span class="num">${usd(raised)} / ${usd(c.target)}</span><span class="num">${countdown(l.curveEnd - now)} left</span></div>`;
-  else if (ph === 'vl') line = `<div class="row"><span>Meme price</span><span class="num ok">×${fmt((l.live && l.live.priceMult) || 1, 2)} since launch</span></div>
-     <div class="row"><span>Vault</span><span class="num">${usd((l.live && l.live.equity) || 0)}</span></div>`;
+  else if (ph === 'vl') line = `<div class="row"><span>Vault</span><span class="num">${esc(VAULT_LABEL[l.vault.mode])} on ${esc(l.vault.asset)}</span></div>
+     <div class="row"><span>Status</span><span class="num ok">trading on Papertrade</span></div>`;
   else line = `<div class="bar"><i style="width:${(pct * 100).toFixed(1)}%;background:var(--muted)"></i></div>
      <div class="row"><span class="num">${usd(raised)} raised of ${usd(c.target)}</span><span>refunds open</span></div>`;
   return `<a class="lc" href="#${esc(l.id)}">
@@ -433,10 +434,10 @@ function mockFeed(l) {
   if (ph === 'vl') {
     const v = l.vault;
     const rows = v.mode === 'DELTA_NEUTRAL'
-      ? [['Pair closed, losing leg', () => `${short(2e6 + r() * 4e6)} PAPER staked`], ['Pair opened', () => `${v.asset} ${Math.round(80 + r() * 200)}x both sides`],
-         ['Staking yield claimed', () => usd(20 + r() * 60, 2)], ['Pair closed, losing leg', () => `${short(2e6 + r() * 4e6)} PAPER staked`]]
-      : [['Liquidated', () => `${short(1e6 + r() * 3e6)} PAPER to holders`], ['Take profit', () => `${usd(400 + r() * 1600)} bought & burned`],
-         ['Opened ' + (r() < .5 ? 'long' : 'short'), () => `${v.asset} ${v.leverage}x · ${usd(300 + r() * 2000)} margin`], ['Liquidated', () => `${short(1e6 + r() * 3e6)} PAPER to holders`]];
+      ? [['Pair closed', () => 'losing leg: PAPER staked'], ['Pair opened', () => `${v.asset} long + short`],
+         ['Staking yield claimed', () => 'to buyback'], ['Pair closed', () => 'losing leg: PAPER staked']]
+      : [['Liquidated', () => 'PAPER to holders'], ['Take profit', () => 'meme bought & burned'],
+         ['Opened ' + (r() < .5 ? 'long' : 'short'), () => `${v.asset} ${v.leverage}x`], ['Liquidated', () => 'PAPER to holders']];
     for (let i = 0; i < 6; i++) { const [what, amt] = rows[i % rows.length]; out.push({t: now - (i * 47 + r() * 40) * 60e3, who: what, amt: amt()}); }
   } else if (ph === 'bc' || ph === 'rf') {
     for (let i = 0; i < 6; i++) out.push({t: now - (i * 9 + r() * 8) * 60e3 - (ph === 'rf' ? 40 * HOUR : 0),
@@ -494,17 +495,16 @@ function actionHtml(l) {
       <p class="note">Each ticket unlocks ${usd(l.quote)} of buying. ${l.pay === 'HYBRID' ? `Every USDC also burns ${fmt(l.burnPerQuote)} PAPER (runs once PAPER is transferable).` : 'Paid in USDC; tickets are the filter.'}</p>`}`;
   }
   if (ph === 'vl') {
-    const x = l.live || {}, mine = w && w.holdings ? (w.holdings[l.id] || 0) : 0;
+    const mine = w && w.holdings ? (w.holdings[l.id] || 0) : 0;
     const dn = l.vault.mode === 'DELTA_NEUTRAL';
+    const flows = dn
+      ? ['A keeper opens a long and a short together through signed intents.', 'The losing leg mints PAPER, which the vault stakes.', 'Staking yield goes to buyback and rebuilds the capital.']
+      : ['A keeper opens trades with the leverage and margin fixed at launch.', 'Take profit: the profit buys the meme back and burns it.', 'Liquidation: the PAPER minted goes to meme holders.'];
     return `<p class="eyebrow">Phase 3 · Vault live</p><h3>Vault on Papertrade</h3>
-      <div class="stats" style="grid-template-columns:1fr 1fr">
-        <div class="stat"><span class="v">${usd(x.equity || 0)}</span><span class="l">vault equity</span></div>
-        <div class="stat"><span class="v ok">×${fmt(x.priceMult || 1, 2)}</span><span class="l">meme price since launch</span></div>
-        <div class="stat"><span class="v">${dn ? short(x.paperStaked || 0) : fmt((x.burnedPct || 0) * 100, 1) + '%'}</span><span class="l">${dn ? 'PAPER staked by the vault' : 'of the pool bought & burned'}</span></div>
-        <div class="stat"><span class="v">${dn ? fmt(x.trades || 0) : short(x.paperHolders || 0)}</span><span class="l">${dn ? 'pairs completed' : 'PAPER sent to holders'}</span></div>
-      </div>
-      ${mine ? `<dl class="kv"><dt>You hold</dt><dd>${short(mine)} $${esc(l.symbol)}</dd><dt>Value now</dt><dd>${usd(mine * l.p1 * (x.priceMult || 1))}</dd></dl>` : ''}
-      <p class="note">${dn ? 'Losing legs mint PAPER that the vault stakes; staking yield rebuilds the capital, cycle after cycle.' : 'Profits buy the meme back and burn it. Liquidations mint PAPER that goes to holders.'}</p>`;
+      <p class="note">The vault rules are fixed at launch. A keeper trades with a session key that can open and close positions but can never withdraw.</p>
+      <ul class="sets">${flows.map(f => `<li>${f}</li>`).join('')}</ul>
+      ${mine ? `<dl class="kv"><dt>You hold</dt><dd>${short(mine)} $${esc(l.symbol)}</dd></dl>` : ''}
+      `;
   }
   const raised = c.cost(0, l.sold), mine = w && w.holdings ? (w.holdings[l.id] || 0) : 0;
   return `<p class="eyebrow">Did not graduate</p><h3>Refunds open</h3>
@@ -582,7 +582,7 @@ function wireDetail(l) {
     if (!q || !w || q.got <= 0 || q.tix > w.tickets) return;
     const sold = l.sold + q.got, grad = sold >= CURVE_SUPPLY - 1;
     const patch = {sold: Math.min(sold, CURVE_SUPPLY), buyers: (l.buyers || 0) + 1};
-    if (grad) Object.assign(patch, {graduated: true, live: {equity: curve(l).target * l.vaultShare, priceMult: 1, burnedPct: 0, paperHolders: 0, paperStaked: 0, trades: 0}});
+    if (grad) Object.assign(patch, {graduated: true, live: {}});
     setState(l.id, patch);
     w.tickets -= q.tix; w.holdings = w.holdings || {}; w.holdings[l.id] = (w.holdings[l.id] || 0) + q.got;
     const s = store(); s.activity[l.id] = [{t: Date.now(), who: 'You', amt: usd(q.spent, 2)}].concat(s.activity[l.id] || []);

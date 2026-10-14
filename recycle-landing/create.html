@@ -96,6 +96,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none}
 footer{max-width:1120px;margin:40px auto 0;border-top:1px solid var(--rule);padding-top:16px;font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 @media (max-width:820px){.stats{grid-template-columns:1fr 1fr}}
 
+.sets{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.sets li{padding:10px 0;border-bottom:1px solid var(--rule);font-size:14px;line-height:1.45}
+
 /* Layout: a launch ticket being filled in. Numbered sections on the left (the real order a creator
    decides things in), a sticky preview of the launch card and its economics on the right. */
 .cgrid{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start}
@@ -335,8 +338,7 @@ function seed() {
      blurb: 'Raids the trash of liquidated longs. Graduated in 9 hours.',
      pay: 'PROOF_OF_LOSS', p0: 0.00001, p1: 0.00024, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
      lmEnd: now - 120 * HOUR, curveEnd: now - 96 * HOUR, sold: CURVE_SUPPLY, buyers: 1203, graduated: true,
-     vault: v({mode: 'KAMIKAZE', leverage: 1000, alloc: 0.02}),
-     live: {equity: 31840, priceMult: 3.4, burnedPct: 0.19, paperHolders: 2.38e6, trades: 61, wins: 27, liqs: 33}},
+     vault: v({mode: 'KAMIKAZE', leverage: 1000, alloc: 0.02})},
     {id: 'phc', name: 'Paper Hands Club', symbol: 'PHC', hue: 280, creator: '0x9d71…03be',
      blurb: 'Members sell at the bottom so you do not have to. Momentum vault on ETH.',
      pay: 'PROOF_OF_LOSS', p0: 0.00001, p1: 0.00024, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
@@ -346,8 +348,7 @@ function seed() {
      blurb: 'Lives between the long and the short. Stakes every PAPER it mints.',
      pay: 'PROOF_OF_LOSS', p0: 0.00001, p1: 0.00024, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
      lmEnd: now - 300 * HOUR, curveEnd: now - 260 * HOUR, sold: CURVE_SUPPLY, buyers: 1630, graduated: true,
-     vault: v({mode: 'DELTA_NEUTRAL', yieldToBuyback: 0.2}),
-     live: {equity: 21400, priceMult: 1.08, burnedPct: 0.004, paperStaked: 61.6e6, trades: 214, wins: 214, liqs: 2, cycles: 0}},
+     vault: v({mode: 'DELTA_NEUTRAL', yieldToBuyback: 0.2})},
     {id: 'bust', name: 'Bust Price', symbol: 'BUST', hue: 30, creator: '0x70aa…5e3d',
      blurb: 'Did not make it to graduation. Buyers can take their share of the raise back.',
      pay: 'PROOF_OF_LOSS', p0: 0.00002, p1: 0.0005, quote: 25, burnPerQuote: 0, vaultShare: 0.5,
@@ -480,7 +481,7 @@ function checks(v) {
   if (v.pay !== 'PAPER') out.push(notional >= 10000
     ? ['ok', `First vault position: at least ${usd(notional)} notional${m.mode === 'DELTA_NEUTRAL' ? ' per leg' : ''}, above Papertrade's $10,000 minimum.`]
     : ['warn', `First vault position would be ${usd(notional)} notional, under Papertrade's $10,000 minimum. Raise the margin per trade or the leverage.`]);
-  if (m.mode !== 'DELTA_NEUTRAL' && m.leverage >= 500) out.push(['warn', `At ${m.leverage}x the liquidation distance is ${fmt((1 / m.leverage - 0.00048) * 100, 3)}%: in our simulations such vaults are wiped out within days, turning the capital into burns and PAPER for holders.`]);
+  if (m.mode !== 'DELTA_NEUTRAL' && m.leverage >= 500) out.push(['warn', `At ${m.leverage}x the vault is liquidated by small moves: expect its capital to turn into PAPER for holders rather than buybacks.`]);
   const errs = errors(v);
   if (errs.vault) out.push(['err', errs.vault]);
   return out;
